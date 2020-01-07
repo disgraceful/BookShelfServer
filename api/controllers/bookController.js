@@ -10,10 +10,12 @@ class BookController {
         this.bookService = service;
         this.searchByTitleOrAuthor = this.searchByTitleOrAuthor.bind(this);
     }
+
     searchByTitleOrAuthor(request, response) {
+        let searchQuery = request.body.query;
         console.log("Search request accepted!")
         let xmlData = "";
-        https.get(`${root}?key=${dev_key}&q=Ender%27s+Game`, (result) => {
+        https.get(`${root}?key=${dev_key}&q=${searchQuery}`, (result) => {
             result.on("data", (chunk) => {
                 xmlData += chunk;
             })
@@ -21,7 +23,6 @@ class BookController {
                 const converted = this.bookService.booksFromXML(xmlData);
                 response.json(converted);
             });
-
         }).on("error", (error) => {
             console.error("Error happened " + error.message);
         })
