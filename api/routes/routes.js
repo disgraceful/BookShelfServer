@@ -1,8 +1,9 @@
 "use strict"
-module.exports = (app) => {
-    const authController = require("../controllers/AuthController");
-    const bookController = require("../controllers/bookController");
-    app.route("/auth/login").post(authController.signInUser);
-    app.route("/auth/register").post(authController.signUpUser);
-    app.route("/books/search").get(bookController.searchByTitleOrAuthor)
+import AuthController from "../controllers/authController";
+import BookController from "../controllers/bookController";
+
+export default (app) => {
+    app.post("/auth/login", AuthController.signInUser);
+    app.post("/auth/register", AuthController.signUpUser);
+    app.get("/books/search", BookController.searchByTitleOrAuthor);
 };

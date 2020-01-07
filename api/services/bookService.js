@@ -1,24 +1,35 @@
 "use strict"
 import converter from "xml-js";
 
-export default class BookService {
+class BookService {
+    constructor() {
+        this.booksFromXML = this.booksFromXML.bind(this);
+        this.findValue = this.findValue.bind(this);
+    }
+
     booksFromXML(xml) {
-        let converted = converter.xml2js(xml, { compact: false });
-        let books = this.searchResults(converted, "results");
-        console.log("books", books);
+        let converted = converter.xml2js(xml, { compact: true });
+        let books = this.findValue(converted, "work");
+        console.log(books);
         return books;
     }
 
-    searchResults(object, value) {
-        for (let key in object) {
-            let objectValue = object[key];
-            if (typeof objectValue === "object") {
-                this.searchResults(objectValue, value);
+    findValue(object, search) {
+        let result;
+        Object.keys(object).some(key => {
+            if (key === search) {
+                result = object[key];
+                return true;
             }
-            if (objectValue.name !== undefined && objectValue.name === value) {
-                return objectValue.elements;
+            if (object[key] && typeof object[key] === "object") {
+                result = this.findValue(object[key], search);
+                return result !== undefined;
             }
-        }
+        });
+        return result;
     }
+
+
 }
 
+export default BookService;

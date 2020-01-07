@@ -1,6 +1,6 @@
-const express = require("express");
-const bodyParser = require("body-parser")
-const cors = require("cors");
+import express from "express";
+import bodyParser from "body-parser";
+import cors from "cors";
 const app = express();
 const port = 4200;
 
@@ -8,10 +8,10 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-const routes = require("./routes/routes.js");
+import routes from "./routes/routes.js";
 routes(app);
 
-const firebase = require("firebase/app");
+import firebase from "firebase/app";
 var firebaseConfig = {
     apiKey: "AIzaSyBJquLDDsi6VJl8kJQ8zRqAHHyGG0SLD9o",
     authDomain: "bookshelf-a2203.firebaseapp.com",
