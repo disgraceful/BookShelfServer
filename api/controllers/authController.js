@@ -1,5 +1,5 @@
 "use strict"
-const firebase = require('firebase');
+const firebase = require("firebase");
 
 exports.signInUser = (request, response) => {
     console.log("SignIn request accepted")
@@ -15,7 +15,7 @@ exports.signInUser = (request, response) => {
             response.json(newUser);
         })
         .catch(error => {
-            console.log(error);
+            response.status(500).json(error);
         })
 };
 exports.signUpUser = (request, response) => {
@@ -32,6 +32,6 @@ exports.signUpUser = (request, response) => {
             response.json(newUser);
         })
         .catch(error => {
-            console.log(error);
+            response.status(500).json(error);
         })
 }
