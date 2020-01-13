@@ -1,6 +1,7 @@
 "use strict"
 import https from "https";
 import BookService from "../services/bookService";
+
 const dev_key = "VRSeRsFDPJ7fOjxPaf81Yg"
 const root = "https://www.goodreads.com/search/index.xml"
 const bookService = new BookService();
@@ -12,8 +13,9 @@ class BookController {
     }
 
     searchByTitleOrAuthor(request, response) {
-        let searchQuery = request.body.query;
         console.log("Search request accepted!")
+        let searchQuery = request.query.search;
+        console.log(searchQuery);
         let xmlData = "";
         https.get(`${root}?key=${dev_key}&q=${searchQuery}`, (result) => {
             result.on("data", (chunk) => {
@@ -27,7 +29,6 @@ class BookController {
             console.error("Error happened " + error.message);
         })
     }
-
 }
 
 export default new BookController(bookService)

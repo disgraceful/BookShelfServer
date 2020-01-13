@@ -11,8 +11,10 @@ class BookService {
     booksFromXML(xml) {
         let converted = converter.xml2js(xml, { compact: true });
         let books = this.findValue(converted, "work");
-        let formatted = this.formatBooks(books)
-        return formatted;
+        if (books) {
+            let formatted = this.formatBooks(books)
+            return formatted;
+        }
     }
 
     findValue(object, search) {
@@ -40,7 +42,7 @@ class BookService {
             const newBook = {
                 year: book.original_publication_year._text,
                 goodreadsRating: book.average_rating._text,
-                id: book.best_book.id_text,
+                id: book.best_book.id._text,
                 title: title,
                 seriesTitle: seriesTitle,
                 authorName: book.best_book.author.name._text,
@@ -49,7 +51,6 @@ class BookService {
             }
             formattedBooks.push(newBook);
         })
-        // console.log(books);
         return formattedBooks;
     }
 
