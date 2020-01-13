@@ -1,11 +1,17 @@
 "use strict"
 import converter from "xml-js";
 
+const genresExceptions = ["to-read", "currently-reading", "owned", "default", "favorites", "books-i-own",
+    "ebook", "kindle", "library", "audiobook", "owned-books", "audiobooks", "my-books",
+    "ebooks", "to-buy", "english", "calibre", "books", "british", "audio", "my-library",
+    "favourites", "re-read", "general", "e-books"]
 class BookService {
     constructor() {
         this.booksFromXML = this.booksFromXML.bind(this);
+        this.bookForBookPage = this.bookForBookPage.bind(this);
         this.findValue = this.findValue.bind(this);
         this.formatBooks = this.formatBooks.bind(this);
+        this.formatBookForBookPage = this.formatBookForBookPage.bind(this);
     }
 
     booksFromXML(xml) {
@@ -13,6 +19,15 @@ class BookService {
         let books = this.findValue(converted, "work");
         if (books) {
             let formatted = this.formatBooks(books)
+            return formatted;
+        }
+    }
+
+    bookForBookPage(xml) {
+        let converted = converter.xml2js(xml, { compact: true });
+        let book = this.findValue(converted, "book");
+        if (book) {
+            let formatted = this.formatBookForBookPage(book);
             return formatted;
         }
     }
@@ -54,7 +69,33 @@ class BookService {
         return formattedBooks;
     }
 
+    formatBookForBookPage(book) {
+        let formatted = {
+            id: book.id._text,
+            title: book.title._text,
+            imageUrl: book.image_url._text,
+            smallImageUrl: book.small_image_url._text,
+            description: book.description._cdata,
+            publishedYear: book.work.original_publication_year._text,
+            goodreadsRating: book.average_rating._text,
+            pages: book.num_pages._cdata,
+            authorId: book.authors.author.id._text, // refactor for multiple authors
+            authorName: book.authors.author.name._text,
+            authorImageUrl: book.authors.author.image_url._cdata,
+            authorSmallImageUrl: book.authors.author.small_image_url._cdata,
+            authorGoodreadsRating: book.authors.author.average_rating._text,
+            seriesId: book.series_works.series_work.series.id._text,
+            seriesName: book.series_works.series_work.series.title._text,
+            positionInSeries: book.series_works.series_work.user_position._text,
+        };
+        formatted.genres = this.formatGenresForBook(book.popular_shelves.shelf);
+        return formatted;
+    }
 
+    formatGenresForBook(shelves) {
+        const genres = shelves.filter(shelf => !genresExceptions.includes(shelf._attributes.name));
+        return genres.length > 3 ? genres.slice(0, 3) : genres;
+    }
 }
 
 export default BookService;
