@@ -26,6 +26,7 @@ class BookService {
     bookForBookPage(xml) {
         let converted = converter.xml2js(xml, { compact: true });
         let book = this.findValue(converted, "book");
+        // return book;
         if (book) {
             let formatted = this.formatBookForBookPage(book);
             return formatted;
@@ -75,25 +76,28 @@ class BookService {
             title: book.title._text,
             imageUrl: book.image_url._text,
             smallImageUrl: book.small_image_url._text,
-            description: book.description._cdata,
+            description: book.description._cdata.replace(/(&nbsp;|<([^>]+)>)/ig, ''), // remove <br> tags
             publishedYear: book.work.original_publication_year._text,
             goodreadsRating: book.average_rating._text,
             pages: book.num_pages._cdata,
             authorId: book.authors.author.id._text, // refactor for multiple authors
             authorName: book.authors.author.name._text,
-            authorImageUrl: book.authors.author.image_url._cdata,
+            authorImageUrl: book.authors.author.image_url._cdata, //do i really neeed any other info about author?
             authorSmallImageUrl: book.authors.author.small_image_url._cdata,
             authorGoodreadsRating: book.authors.author.average_rating._text,
             seriesId: book.series_works.series_work.series.id._text,
-            seriesName: book.series_works.series_work.series.title._text,
+            seriesName: book.series_works.series_work.series.title._cdata.trim(),//maybe combine here in series Name?
             positionInSeries: book.series_works.series_work.user_position._text,
         };
         formatted.genres = this.formatGenresForBook(book.popular_shelves.shelf);
         return formatted;
     }
 
+    //transform goodreads 'shelves' to genres
     formatGenresForBook(shelves) {
-        const genres = shelves.filter(shelf => !genresExceptions.includes(shelf._attributes.name));
+        const genres = shelves
+            .filter(shelf => !genresExceptions.includes(shelf._attributes.name))
+            .map(genre => genre._attributes.name.replace(/^\w/, char => char.toUpperCase()));//first letter toUpperCase \fantasy => Fantasy
         return genres.length > 3 ? genres.slice(0, 3) : genres;
     }
 }
