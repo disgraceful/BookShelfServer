@@ -12,6 +12,9 @@ class BookService {
         this.findValue = this.findValue.bind(this);
         this.formatBooks = this.formatBooks.bind(this);
         this.formatBookForBookPage = this.formatBookForBookPage.bind(this);
+        this.getBookTitle = this.getBookTitle.bind(this);
+        this.getAllBookAuthors = this.getAllBookAuthors.bind(this);
+        this.mapAuthor = this.mapAuthor.bind(this);
     }
 
     booksFromXML(xml) {
@@ -73,22 +76,27 @@ class BookService {
     formatBookForBookPage(book) {
         let formatted = {
             id: book.id._text,
-            title: book.title._text,
+            title: book.title._text || this.getBookTitle(book.title._cdata),
             imageUrl: book.image_url._text,
             smallImageUrl: book.small_image_url._text,
             description: book.description._cdata.replace(/(&nbsp;|<([^>]+)>)/ig, ''), // remove <br> tags
             publishedYear: book.work.original_publication_year._text,
             goodreadsRating: book.average_rating._text,
             pages: book.num_pages._cdata,
-            authorId: book.authors.author.id._text, // refactor for multiple authors
-            authorName: book.authors.author.name._text,
-            authorImageUrl: book.authors.author.image_url._cdata, //do i really neeed any other info about author?
-            authorSmallImageUrl: book.authors.author.small_image_url._cdata,
-            authorGoodreadsRating: book.authors.author.average_rating._text,
-            seriesId: book.series_works.series_work.series.id._text,
-            seriesName: book.series_works.series_work.series.title._cdata.trim(),//maybe combine here in series Name?
-            positionInSeries: book.series_works.series_work.user_position._text,
         };
+        const authors = book.authors.author;
+        let trueAuthors = Array.isArray(authors) ? this.getAllBookAuthors(authors) : [this.mapAuthor(authors)];
+        let series = book.series_works.series_work;
+        if (Array.isArray(series)) {
+            series = series[0];
+        }
+
+        let trueSeries = !series ? null : {
+            id: series.series.id._text,
+            fullName: `(${series.series.title._cdata.trim()} #${series.user_position._text})`
+        }
+        formatted.series = trueSeries;
+        formatted.authors = trueAuthors;
         formatted.genres = this.formatGenresForBook(book.popular_shelves.shelf);
         return formatted;
     }
@@ -99,6 +107,28 @@ class BookService {
             .filter(shelf => !genresExceptions.includes(shelf._attributes.name))
             .map(genre => genre._attributes.name.replace(/^\w/, char => char.toUpperCase()));//first letter toUpperCase \fantasy => Fantasy
         return genres.length > 3 ? genres.slice(0, 3) : genres;
+    }
+
+    getBookTitle(string) {
+        let stringTitle = string;
+        let seriesSeparator = stringTitle.indexOf("(");
+        let title = stringTitle.substr(0, seriesSeparator > 0 ? seriesSeparator : stringTitle.length).trim();
+        // let seriesTitle = seriesSeparator < 0 ? "" : stringTitle.substr(seriesSeparator, stringTitle.indexOf(")") - seriesSeparator + 1);
+        return title;
+    }
+
+    getAllBookAuthors(authors) {
+        return authors.filter(author => !author.role._text).map(author => this.mapAuthor(author));
+    }
+
+    mapAuthor(author) {
+        return {
+            id: author.id._text,
+            name: author.name._text,
+            imageUrl: author.image_url._cdata,
+            smallImageUrl: author.small_image_url._cdata,
+            goodreadsRating: author.average_rating._text
+        }
     }
 }
 
