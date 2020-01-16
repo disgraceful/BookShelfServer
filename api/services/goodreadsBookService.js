@@ -5,7 +5,7 @@ const genresExceptions = ["to-read", "currently-reading", "owned", "default", "f
     "ebook", "kindle", "library", "audiobook", "owned-books", "audiobooks", "my-books",
     "ebooks", "to-buy", "english", "calibre", "books", "british", "audio", "my-library",
     "favourites", "re-read", "general", "e-books"]
-class BookService {
+class GoodreadsBookService {
     constructor() {
         this.booksFromXML = this.booksFromXML.bind(this);
         this.bookForBookPage = this.bookForBookPage.bind(this);
@@ -79,7 +79,7 @@ class BookService {
             title: book.title._text || this.getBookTitle(book.title._cdata),
             imageUrl: book.image_url._text,
             smallImageUrl: book.small_image_url._text,
-            description: book.description._cdata.replace(/(&nbsp;|<([^>]+)>)/ig, ''), // remove <br> tags
+            description: book.description._cdata.replace(/(&nbsp;|<([^>]+)>)/ig, ''), //for removing <br> tags
             publishedYear: book.work.original_publication_year._text,
             goodreadsRating: book.average_rating._text,
             pages: book.num_pages._cdata,
@@ -132,4 +132,4 @@ class BookService {
     }
 }
 
-export default BookService;
+export default GoodreadsBookService;
