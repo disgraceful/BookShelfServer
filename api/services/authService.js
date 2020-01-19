@@ -1,4 +1,5 @@
 import firebase from "firebase";
+import { ErrorWithHttpCode } from "../error/ErrorWithHttpCode";
 
 class AuthService {
     constructor() {
@@ -12,7 +13,9 @@ class AuthService {
             const user = await firebase.auth().signInWithEmailAndPassword(email, password);
             existingUser.email = user.user.email;
             const snapshot = await firebase.database().ref("users").orderByChild("email").equalTo(existingUser.email).once("value")
-
+            if (!snapshot.val()) {
+                throw new ErrorWithHttpCode(404, `User data associated with user email ${email}`);
+            }
             let key;
             snapshot.forEach(e => key = e.key);
             const dbUser = snapshot.val()[key];
@@ -25,7 +28,7 @@ class AuthService {
             console.log("result user: ", existingUser);
             return existingUser;
         } catch (error) {
-            return error;
+            throw { message: error.message, code: error.code };
         }
     }
 
@@ -46,11 +49,9 @@ class AuthService {
             return newUser;
         }
         catch (error) {
-            return error;
+            throw { message: error.message, code: error.code };
         }
     }
-
-
 }
 
 export default AuthService;

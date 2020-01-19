@@ -1,5 +1,3 @@
-"use strict"
-import firebase from "firebase";
 import AuthService from "../services/authService";
 
 const authService = new AuthService();
@@ -10,30 +8,31 @@ class AuthController {
         this.signInUser = this.signInUser.bind(this);
         this.signUpUser = this.signUpUser.bind(this);
     }
-    signInUser(request, response) {
+
+    async signInUser(request, response) {
         console.log("SignIn request accepted")
-        let userCredentials = request.body;
+        const userCredentials = request.body;
         console.log("user: ", userCredentials);
-        let user = this.authService.getUser(userCredentials.email, userCredentials.password);
-        console.log("sending to cient: ", user);
-        if (user.message) {
-            response.status(500).json(user);
-        } else {
-            response.json(user);
+        try {
+            const user = await this.authService.getUser(userCredentials.email, userCredentials.password);
+            response.json(user)
+        }
+        catch (error) {
+            response.status(error.code).json(error);
         }
     }
 
-    signUpUser(request, response) {
+    async signUpUser(request, response) {
         console.log("SignUp request accepted");
-        let userCredentials = request.body;
+        const userCredentials = request.body;
         console.log(userCredentials);
-        let user = this.authService.createUser(userCredentials.email, userCredentials.password);
-        if (user.message) {
-            response.status(500).json(user);
-        } else {
+        try {
+            const user = await this.authService.createUser(userCredentials.email, userCredentials.password);
             response.json(user);
+        } catch (error) {
+            response.status(error.code).json(error);
         }
     }
 }
-export default new AuthController(authService);
 
+export default new AuthController(authService);
