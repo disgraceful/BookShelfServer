@@ -18,7 +18,7 @@ class AuthController {
             response.json(user)
         }
         catch (error) {
-            response.status(error.code).json(error);
+            response.status(error.httpCode).json(error);
         }
     }
 
@@ -30,7 +30,7 @@ class AuthController {
             const user = await this.authService.createUser(userCredentials.email, userCredentials.password);
             response.json(user);
         } catch (error) {
-            response.status(error.code).json(error);
+            response.status(error.httpCode).json(error);
         }
     }
 }

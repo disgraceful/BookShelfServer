@@ -17,7 +17,7 @@ class UserController {
             response.json(user)
         }
         catch (error) {
-            response.status(error.code).json(error);
+            response.status(error.httpCode).json(error);
         }
 
     }

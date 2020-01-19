@@ -28,7 +28,10 @@ class AuthService {
             console.log("result user: ", existingUser);
             return existingUser;
         } catch (error) {
-            throw { message: error.message, code: error.code };
+            throw {
+                message: error.message,
+                httpCode: error.httpCode || 500
+            };
         }
     }
 
@@ -49,7 +52,10 @@ class AuthService {
             return newUser;
         }
         catch (error) {
-            throw { message: error.message, code: error.code };
+            throw {
+                message: error.message,
+                httpCode: error.httpCode || 500 
+            };
         }
     }
 }

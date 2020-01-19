@@ -27,7 +27,7 @@ class UserService {
         } catch (error) {
             throw {
                 message: error.message,
-                code: error.code || 500
+                httpCode: error.httpCode || 500
             };
         }
     }
