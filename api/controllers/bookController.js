@@ -43,6 +43,7 @@ class BookController {
         console.log("Get Book By Id request accepted");
         let bookId = request.body.id;
         console.log("id", bookId);
+        this.firebaseBookService.findBookById(bookId);
 
     }
 
