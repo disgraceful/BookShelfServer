@@ -25,10 +25,7 @@ class UserService {
             }
             return user;
         } catch (error) {
-            throw {
-                message: error.message,
-                httpCode: error.httpCode || 500
-            };
+            throw new ErrorWithHttpCode(error.httpCode || 500,error.message);
         }
     }
 }
