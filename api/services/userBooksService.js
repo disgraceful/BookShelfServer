@@ -4,36 +4,40 @@ import { ErrorWithHttpCode } from "../error/ErrorWithHttpCode";
 class UserBooksService {
     constructor(userService) {
         this.userService = userService;
-        this.getUserReading = this.getUserReading.bind(this);
-        this.addToUserReading = this.addToUserReading.bind(this);
+        this.getUserCollection = this.getUserCollection.bind(this);
+        this.addToUserCollection = this.addToUserCollection.bind(this);
     }
 
-    async getUserReading(id) {
+    async getUserCollection(id, collection) {
         try {
-            const user = await this.userService.getUserById(id)
-            console.log(user.reading);
-            return user.reading;
+            const user = await this.userService.getUserById(id);
+            let array = user[collection];
+            if (!array && !Array.isArray(array)) {
+                throw new ErrorWithHttpCode(400, error.message);
+            }
+            return user[collection];
         } catch (error) {
-            throw new ErrorWithHttpCode(error.httpCode || 500, error.message);
+            throw new ErrorWithHttpCode(error.httpCode || 500, error.message || "Ooops! Something went wrong on the server!");
         }
     }
 
-    async addToUserReading(id, book) {
+    async addToUserCollection(id, collection, book) {
         try {
-            const user = await this.userService.getUserById(id);
-            if (!user.reading.every(item => item.id !== book.id)) {
-                console.log("same ID!");
-            } else {
-                user.reading.push(book);
-                await firebase.database().ref("users").child(id).update({ reading: user.reading }, error => {
-                    if (error) {
-                        throw new ErrorWithHttpCode(400, error.message);
-                    }
-                });
+            let user = await this.userService.getUserById(id);
+            const array = user[collection];
+            if (!array && !Array.isArray(array)) {
+                throw new ErrorWithHttpCode(400, error.message);
+            }
+            if (array.every(item => item.id !== book.id)) {
+                array.push(book);
+                await firebase.database().ref("users").child(id).update({ [collection]: array }, (error) => {
+                    if (error) throw new ErrorWithHttpCode(400, error.message);
+                })
+                user = await this.userService.getUserById(id)
             }
             return user;
         } catch (error) {
-            throw new ErrorWithHttpCode(error.httpCode || 500, error.message);
+            throw new ErrorWithHttpCode(error.httpCode || 500, error.message || "Ooops! Something went wrong on the server!");
         }
     }
 }

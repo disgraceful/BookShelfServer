@@ -11,7 +11,6 @@ class UserService {
         try {
             const snapshot = await firebase.database().ref("users").child(id).once("value");
             const value = snapshot.val();
-            console.log("snapshot value", value);
             if (!value) {
                 throw new ErrorWithHttpCode(404, `User with id ${id} not found`);
             }

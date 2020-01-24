@@ -11,4 +11,12 @@ export default (app) => {
     app.get("/user", UserController.getUser);
     app.get("/user/reading", UserController.getReading);
     app.post("/user/reading", UserController.addToReading);
+    app.get("/user/toread", UserController.getToRead);
+    app.post("/user/toread", UserController.addToRead);
+    app.get("/user/stopped", UserController.getStopped);
+    app.post("/user/stopped", UserController.addToStopped);
+    app.get("/user/finished", UserController.getFinished);
+    app.post("/user/finished", UserController.addToFinished);
+    app.get("/user/favorites", UserController.getFavorites);
+    app.post("/user/favorites", UserController.addToFavorites);
 };
