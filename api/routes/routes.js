@@ -7,7 +7,7 @@ export default (app) => {
     app.post("/auth/login", AuthController.signInUser);
     app.post("/auth/register", AuthController.signUpUser);
     app.get("/books/search", BookController.searchByTitleOrAuthor);
-    app.get("/books", BookController.getBookById);
+    app.get("/books/:bookId-:userId", BookController.getBookById);
     app.get("/user", UserController.getUser);
     app.get("/user/reading", UserController.getReading);
     app.post("/user/reading", UserController.addToReading);

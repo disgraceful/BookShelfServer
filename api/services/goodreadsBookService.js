@@ -8,9 +8,11 @@ const genresExceptions = ["to-read", "currently-reading", "owned", "default", "f
     "favourites", "re-read", "general", "e-books"];
 
 class GoodreadsBookService {
-    constructor() {
+    constructor(userService) {
+        this.userService = userService;
         this.searchBooks = this.searchBooks.bind(this);
         this.getBookByGoodreadsId = this.getBookByGoodreadsId.bind(this);
+        this.fetchUserBookData = this.fetchUserBookData.bind(this);
         this.getValueFromGoodreads = this.getValueFromGoodreads.bind(this);
         this.findValue = this.findValue.bind(this);
         this.formatBooks = this.formatBooks.bind(this);
@@ -43,6 +45,20 @@ class GoodreadsBookService {
             }
             let formatted = this.formatBookForBookPage(book);
             return formatted;
+        } catch (error) {
+            throw new ErrorWithHttpCode(error.httpCode || 500, error.message);
+        }
+    }
+
+    async fetchUserBookData(userId, book) {
+        try {
+            const user = await this.userService.getUserById(userId);
+            const userBookRecord = user.books.find(item => item.id === book.id);
+            if (!userBookRecord) return book;
+            book.rating = userBookRecord.rating;
+            book.pagesRead = userBookRecord.pagesRead;
+            book.status = userBookRecord.status;
+            return book;
         } catch (error) {
             throw new ErrorWithHttpCode(error.httpCode || 500, error.message);
         }
