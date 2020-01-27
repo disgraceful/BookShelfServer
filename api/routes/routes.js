@@ -19,4 +19,4 @@ export default (app) => {
     app.post("/user/finished", UserController.addToFinished);
     app.get("/user/favorites", UserController.getFavorites);
     app.post("/user/favorites", UserController.addToFavorites);
-};
+};      

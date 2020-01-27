@@ -18,10 +18,7 @@ class UserService {
                 id: id,
                 email: value.email,
                 favorites: value.favorites || [],
-                reading: value.reading || [],
-                toread: value.toread || [],
-                stopped: value.stopped || [],
-                finished: value.finished || [],
+                books: value.books || [],
             }
             return user;
         } catch (error) {

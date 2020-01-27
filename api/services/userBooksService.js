@@ -11,11 +11,11 @@ class UserBooksService {
     async getUserCollection(id, collection) {
         try {
             const user = await this.userService.getUserById(id);
-            let array = user[collection];
-            if (!array && !Array.isArray(array)) {
+            const array = user.books.filter(book => book.status === collection);
+            if (!array) {
                 throw new ErrorWithHttpCode(400, error.message);
             }
-            return user[collection];
+            return array;
         } catch (error) {
             throw new ErrorWithHttpCode(error.httpCode || 500, error.message || "Ooops! Something went wrong on the server!");
         }
@@ -24,18 +24,18 @@ class UserBooksService {
     async addToUserCollection(id, collection, book) {
         try {
             let user = await this.userService.getUserById(id);
-            const array = user[collection];
-            if (!array && !Array.isArray(array)) {
-                throw new ErrorWithHttpCode(400, error.message);
+            if (!user.books) user.books = [];
+            const bookRef = user.books.find(item => item.id === book.id);
+            if (user.books.includes(book) || bookRef) {
+                bookRef.status = collection;
+            } else {
+                book.status = collection;
+                user.books.push(book);
             }
-            if (array.every(item => item.id !== book.id)) {
-                array.push(book);
-                await firebase.database().ref("users").child(id).update({ [collection]: array }, (error) => {
-                    if (error) throw new ErrorWithHttpCode(400, error.message);
-                })
-                user = await this.userService.getUserById(id)
-            }
-            return user;
+            await firebase.database().ref("users").child(id).update({ books: user.books }, (error) => {
+                if (error) throw new ErrorWithHttpCode(400, error.message);
+            });
+            return book;
         } catch (error) {
             throw new ErrorWithHttpCode(error.httpCode || 500, error.message || "Ooops! Something went wrong on the server!");
         }

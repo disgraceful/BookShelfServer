@@ -76,7 +76,7 @@ class UserController {
     }
 
     async addToCollection(request, response, collection) {
-        console.log(`Add Book to ${collection} request accepted`);
+        console.log(`\nAdd Book to ${collection} request accepted`);
         const userId = request.body.userId;
         const book = request.body.book;
         console.log(userId, book);
