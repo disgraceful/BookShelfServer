@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
@@ -25,4 +26,4 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 
 
-app.listen(port, () => console.log(`Started on port ${port}!`))
+app.listen(port, () => console.log(`Started on port ${port}!`));

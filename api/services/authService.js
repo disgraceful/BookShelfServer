@@ -1,5 +1,8 @@
+import "dotenv/config"
+import jwt from "jsonwebtoken";
 import firebase from "firebase";
 import { ErrorWithHttpCode } from "../error/ErrorWithHttpCode";
+
 
 class AuthService {
     constructor() {
@@ -20,10 +23,11 @@ class AuthService {
             snapshot.forEach(e => key = e.key);
             const dbUser = snapshot.val()[key];
             existingUser.id = key;
-            existingUser.favorites = dbUser.favorites || [];
             existingUser.books = dbUser.books || [];
-            console.log("result user: ", existingUser);
-            return existingUser;
+            const token = jwt.sign({ id: key }, process.env.JWT_KEY, {
+                expiresIn: 2592000 //30 days
+            });
+            return { user: existingUser, token: token };
         } catch (error) {
             throw new ErrorWithHttpCode(error.httpCode || 500, error.message);
         }
@@ -35,15 +39,19 @@ class AuthService {
             const user = await firebase.auth().createUserWithEmailAndPassword(email, password);
             newUser = {
                 email: user.user.email,
-                favorites: [],
-                books: []
+                books: [],
             };
             const data = await firebase.database().ref("users").push(newUser);
             newUser.id = data.key;
-            return newUser;
+            const token = jwt.sign({ id: newUser.id }, process.env.JWT_KEY, {
+                expiresIn: 2592000 //30 days
+            });
+            return { user: newUser, token: token };
         }
         catch (error) {
-            throw new ErrorWithHttpCode(error.httpCode || 500, error.message);
+            const httpError = new ErrorWithHttpCode(error.httpCode || 500, error.message);
+            console.log(httpError.message);
+            throw httpError;
         }
     }
 }

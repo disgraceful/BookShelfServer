@@ -1,7 +1,5 @@
 import AuthService from "../services/authService";
 
-const authService = new AuthService();
-
 class AuthController {
     constructor(authService) {
         this.authService = authService;
@@ -12,27 +10,25 @@ class AuthController {
     async signInUser(request, response) {
         console.log("SignIn request accepted")
         const userCredentials = request.body;
-        console.log("user: ", userCredentials);
         try {
             const user = await this.authService.getUser(userCredentials.email, userCredentials.password);
             response.json(user)
         }
         catch (error) {
-            response.status(error.httpCode).json(error);
+            response.status(error.httpCode).json({ httpCode: error.httpCode, message: error.message });
         }
     }
 
     async signUpUser(request, response) {
         console.log("SignUp request accepted");
         const userCredentials = request.body;
-        console.log(userCredentials);
         try {
             const user = await this.authService.createUser(userCredentials.email, userCredentials.password);
             response.json(user);
         } catch (error) {
-            response.status(error.httpCode).json(error);
+            response.status(error.httpCode).json({ httpCode: error.httpCode, message: error.message });
         }
     }
 }
 
-export default new AuthController(authService);
+export default new AuthController(new AuthService());
