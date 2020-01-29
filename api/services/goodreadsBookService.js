@@ -180,8 +180,6 @@ class GoodreadsBookService {
             goodreadsRating: author.average_rating._text
         }
     }
-
-
 }
 
 export default GoodreadsBookService;

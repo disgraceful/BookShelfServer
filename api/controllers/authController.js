@@ -1,4 +1,8 @@
 import AuthService from "../services/authService";
+import TokenService from "../services/tokenService";
+
+const tokenService = new TokenService();
+const authService = new AuthService(tokenService);
 
 class AuthController {
     constructor(authService) {
@@ -31,4 +35,4 @@ class AuthController {
     }
 }
 
-export default new AuthController(new AuthService());
+export default new AuthController(authService);

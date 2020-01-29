@@ -5,7 +5,8 @@ import { ErrorWithHttpCode } from "../error/ErrorWithHttpCode";
 
 
 class AuthService {
-    constructor() {
+    constructor(tokenService) {
+        this.tokenService = tokenService;
         this.getUser = this.getUser.bind(this);
         this.createUser = this.createUser.bind(this);
     }
@@ -24,9 +25,7 @@ class AuthService {
             const dbUser = snapshot.val()[key];
             existingUser.id = key;
             existingUser.books = dbUser.books || [];
-            const token = jwt.sign({ id: key }, process.env.JWT_KEY, {
-                expiresIn: 2592000 //30 days
-            });
+            const token = this.tokenService.createToken({ id: key }, 2592000);
             return { user: existingUser, token: token };
         } catch (error) {
             throw new ErrorWithHttpCode(error.httpCode || 500, error.message);
@@ -43,15 +42,11 @@ class AuthService {
             };
             const data = await firebase.database().ref("users").push(newUser);
             newUser.id = data.key;
-            const token = jwt.sign({ id: newUser.id }, process.env.JWT_KEY, {
-                expiresIn: 2592000 //30 days
-            });
+            const token = this.tokenService.createToken({ id: data.key }, 2592000);
             return { user: newUser, token: token };
         }
         catch (error) {
-            const httpError = new ErrorWithHttpCode(error.httpCode || 500, error.message);
-            console.log(httpError.message);
-            throw httpError;
+            throw new ErrorWithHttpCode(error.httpCode || 500, error.message);
         }
     }
 }

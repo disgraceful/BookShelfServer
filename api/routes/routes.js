@@ -6,8 +6,9 @@ import UserController from "../controllers/userController"
 export default (app) => {
     app.post("/auth/login", AuthController.signInUser);
     app.post("/auth/register", AuthController.signUpUser);
-    app.get("/books/search", BookController.searchByTitleOrAuthor);
-    app.get("/books/:bookId-:userId", BookController.getBookById);
+    app.get("/books/search/:query", BookController.searchByTitleOrAuthor);
+    app.get("/books/:bookId", BookController.getBookById);
+    //need token validation!
     app.get("/user", UserController.getUser);
     app.get("/user/reading", UserController.getReading);
     app.post("/user/reading", UserController.addToReading);
