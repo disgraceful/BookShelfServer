@@ -1,41 +1,31 @@
 "use strict"
 import UserService from "../services/userService";
 import UserBooksService from "../services/userBooksService";
-
-const READING = "reading";
-const TOREAD = "toread";
-const STOPPED = "stopped";
-const FINISHED = "finished";
-const FAVORITES = "favorites";
+import TokenService from "../services/tokenService";
 
 const userService = new UserService();
 const userBooksService = new UserBooksService(userService);
+const tokenService = new TokenService();
 
 class UserController {
-    constructor(userService, userBooksService) {
+    constructor(userService, userBooksService, tokenService) {
         this.userService = userService;
         this.userBooksService = userBooksService;
+        this.tokenService = tokenService;
         this.getUser = this.getUser.bind(this);
+        this.getUserBooks = this.getUserBooks.bind(this);
         this.getCollection = this.getCollection.bind(this);
-        this.getReading = this.getReading.bind(this);
-        this.getToRead = this.getToRead.bind(this);
-        this.getStopped = this.getStopped.bind(this);
-        this.getFinished = this.getFinished.bind(this);
-        this.getFavorites = this.getFavorites.bind(this);
         this.addToCollection = this.addToCollection.bind(this);
-        this.addToReading = this.addToReading.bind(this);
-        this.addToRead = this.addToRead.bind(this);
-        this.addToStopped = this.addToStopped.bind(this);
-        this.addToFinished = this.addToFinished.bind(this);
-        this.addToFavorites = this.addToFavorites.bind(this);
     }
 
     async getUser(request, response) {
         console.log("Get User request accepted");
-        const userId = request.query.id;
-        console.log("User id: ", userId);
+        const token = request.headers['x-access-token'];
+        console.log(token);
         try {
-            const user = await this.userService.getUserById(userId);
+            const validated = this.tokenService.validateToken(token);
+            if (!validated) throw new ErrorWithHttpCode(400, "Error validating token");
+            const user = await this.userService.getUserById(validated.id);
             response.json(user)
         }
         catch (error) {
@@ -43,70 +33,52 @@ class UserController {
         }
     }
 
-    async getCollection(request, response, collection) {
+    async getUserBooks(request, response) {
+        console.log(`Get User Books request accepted`);
+        const token = request.headers['x-access-token'];
+        console.log(token);
+        try {
+            const validated = this.tokenService.validateToken(token);
+            if (!validated) throw new ErrorWithHttpCode(400, "Error validating token");
+            const result = await this.userBooksService.getUserBooks(validated.id);
+            response.json(result);
+        }
+        catch (error) {
+            response.status(error.httpCode).json(error);
+        }
+    }
+
+    async getCollection(request, response) {
+        const collection = request.params.collection;
         console.log(`Get Books from ${collection} request accepted`);
-        const userId = request.query.id;
-        console.log("User id: ", userId);
+        const token = request.headers['x-access-token'];
+        console.log(collection, token);
         try {
-            const result = await this.userBooksService.getUserCollection(userId, collection);
+            const validated = this.tokenService.validateToken(token);
+            if (!validated) throw new ErrorWithHttpCode(400, "Error validating token");
+            const result = await this.userBooksService.getUserCollection(validated.id, collection);
             response.json(result);
         } catch (error) {
             response.status(error.httpCode).json(error);
         }
     }
 
-    async getReading(request, response) {
-        await this.getCollection(request, response, READING);
-    }
-
-    async getToRead(request, response) {
-        await this.getCollection(request, response, TOREAD);
-    }
-
-    async getStopped(request, response) {
-        await this.getCollection(request, response, STOPPED);
-    }
-
-    async getFinished(request, response) {
-        await this.getCollection(request, response, FINISHED);
-    }
-
-    async getFavorites(request, response) {
-        await this.getCollection(request, response, FAVORITES);
-    }
-
-    async addToCollection(request, response, collection) {
-        console.log(`\nAdd Book to ${collection} request accepted`);
-        const userId = request.body.userId;
+    async addToCollection(request, response) {
+        const collection = request.params.collection;
+        console.log(`Get Books from ${collection} request accepted`);
+        const token = request.headers['x-access-token'];
         const book = request.body.book;
-        console.log(userId, book);
+        console.log(collection, book, token);
         try {
-            const result = await this.userBooksService.addToUserCollection(userId, collection, book);
+            const validated = this.tokenService.validateToken(token);
+            if (!validated) throw new ErrorWithHttpCode(400, "Error validating token");
+            const result = await this.userBooksService.addToUserCollection(validated.id, collection, book);
             response.json(result);
         } catch (error) {
+            console.log("error ", error)
             response.status(error.httpCode).json(error);
         }
-    }
-
-    async addToReading(request, response) {
-        await this.addToCollection(request, response, READING);
-    }
-
-    async addToRead(request, response) {
-        await this.addToCollection(request, response, TOREAD);
-    }
-
-    async addToStopped(request, response) {
-        await this.addToCollection(request, response, STOPPED);
-    }
-
-    async addToFinished(request, response) {
-        await this.addToCollection(request, response, FINISHED);
-    }
-
-    async addToFavorites(request, response) {
-        await this.addToCollection(request, response, FAVORITES);
     }
 }
 
-export default new UserController(userService, userBooksService);
+export default new UserController(userService, userBooksService, tokenService);
