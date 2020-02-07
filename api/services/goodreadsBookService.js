@@ -125,7 +125,7 @@ class GoodreadsBookService {
                 title: book.title._text || this.getBookTitle(book.title._cdata),
                 imageUrl: book.image_url._text,
                 smallImageUrl: book.small_image_url._text,
-                description: book.description._cdata.replace(/(&nbsp;|<([^>]+)>)/ig, ''), //for removing <br> tags
+                description: book.description._cdata.replace(/(&nbsp;|<([^>]+)>)/ig, '\n'), //replace <br> tags with linebreaks
                 publishedYear: book.work.original_publication_year._text,
                 goodreadsRating: book.average_rating._text,
                 pages: book.num_pages._cdata,
