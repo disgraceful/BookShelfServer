@@ -20,7 +20,7 @@ class BookController {
 
     async searchByTitleOrAuthor(request, response) {
         console.log("Search request accepted!")
-        const searchQuery = request.params.query;
+        const searchQuery = request.query.query;
         const token = request.headers['x-access-token'];
         console.log(searchQuery, token);
         try {

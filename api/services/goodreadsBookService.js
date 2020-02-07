@@ -27,7 +27,7 @@ class GoodreadsBookService {
             const converted = await this.getValueFromGoodreads(url);
             let books = this.findValue(converted, "work");
             if (!books) {
-                throw new ErrorWithHttpCode(404, "Books with that name or author are not found")
+                throw new ErrorWithHttpCode(404, "Book not found")
             }
             let formatted = this.formatBooks(books)
             return formatted;
