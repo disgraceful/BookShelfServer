@@ -10,7 +10,11 @@ export default (app) => {
     app.get("/books/:bookId", BookController.getBookById);
     app.get("/user", UserController.getUser);
     app.get("/user/books", UserController.getUserBooks);
+    app.get("/user/favorite", UserController.getFavoriteBooks)
+    app.post("/user/favorite", UserController.setFavorite);
     app.get("/user/:collection", UserController.getCollection);
     app.post("/user/:collection", UserController.addToCollection);
-    app.delete("/user/collection", UserController.deleteBook)
+    app.delete("/user/collection", UserController.deleteBook);
+
+    //update book request
 };      

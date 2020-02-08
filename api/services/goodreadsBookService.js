@@ -58,6 +58,7 @@ class GoodreadsBookService {
             book.rating = userBookRecord.rating;
             book.pagesRead = userBookRecord.pagesRead;
             book.status = userBookRecord.status;
+            book.isFavorited = userBookRecord.isFavorited;
             return book;
         } catch (error) {
             throw new ErrorWithHttpCode(error.httpCode || 500, error.message);
