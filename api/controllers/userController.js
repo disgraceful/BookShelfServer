@@ -16,6 +16,7 @@ class UserController {
         this.getUserBooks = this.getUserBooks.bind(this);
         this.getCollection = this.getCollection.bind(this);
         this.addToCollection = this.addToCollection.bind(this);
+        this.deleteBook = this.deleteBook.bind(this);
     }
 
     async getUser(request, response) {
@@ -78,6 +79,23 @@ class UserController {
             console.log("error ", error)
             response.status(error.httpCode).json(error);
         }
+    }
+
+    async deleteBook(request, response) {
+        console.log("Book Delete Request accepted");
+        const bookId = request.query.bookId;
+        const token = request.headers['x-access-token'];
+        console.log(bookId, token);
+        try {
+            const validated = this.tokenService.validateToken(token);
+            if (!validated) throw new ErrorWithHttpCode(400, "Error validating token");
+            const result = await this.userBooksService.deleteBookFromCollection(validated.id, bookId);
+            response.json(result);
+        } catch (error) {
+            response.status(error.httpCode).json(error);
+        }
+
+
     }
 }
 

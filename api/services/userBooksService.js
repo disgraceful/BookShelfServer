@@ -7,6 +7,7 @@ class UserBooksService {
         this.getUserBooks = this.getUserBooks.bind(this);
         this.getUserCollection = this.getUserCollection.bind(this);
         this.addToUserCollection = this.addToUserCollection.bind(this);
+        this.deleteBookFromCollection = this.deleteBookFromCollection.bind(this);
     }
 
     async getUserBooks(id) {
@@ -49,6 +50,19 @@ class UserBooksService {
         } catch (error) {
             throw new ErrorWithHttpCode(error.httpCode || 500, error.message || "Ooops! Something went wrong on the server!");
         }
+    }
+
+    async deleteBookFromCollection(id, bookId) {
+        try {
+            const books = await this.getUserBooks(id);
+            const bookRef = books.find(item => item.id === bookId);
+            const index = books.indexOf(bookRef);
+            await firebase.database().ref(`users/${id}/books/${index}`).set(null)
+            return { status: "not reading" };
+        } catch (error) {
+            throw new ErrorWithHttpCode(error.httpCode || 500, error.message || "Ooops! Something went wrong on the server!");
+        }
+
     }
 }
 
