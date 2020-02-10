@@ -15,6 +15,7 @@ export default (app) => {
     app.get("/user/:collection", UserController.getCollection);
     app.post("/user/:collection", UserController.addToCollection);
     app.delete("/user/collection", UserController.deleteBook);
+    app.put("/user/collection", UserController.updateBook)
 
-    //update book request
+
 };      

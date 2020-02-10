@@ -19,6 +19,7 @@ class UserController {
         this.deleteBook = this.deleteBook.bind(this);
         this.setFavorite = this.setFavorite.bind(this);
         this.getFavoriteBooks = this.getFavoriteBooks.bind(this);
+        this.updateBook = this.updateBook.bind(this);
     }
 
     async getUser(request, response) {
@@ -121,6 +122,21 @@ class UserController {
             const validated = this.tokenService.validateToken(token);
             if (!validated) throw new ErrorWithHttpCode(400, "Error validating token");
             const result = await this.userBooksService.getFavorites(validated.id);
+            response.json(result);
+        } catch (error) {
+            response.status(error.httpCode).json(error);
+        }
+    }
+
+    async updateBook(request, response) {
+        console.log("Update Book request accepted");
+        const book = request.body.book;
+        const token = request.headers['x-access-token'];
+        console.log(book, token);
+        try {
+            const validated = this.tokenService.validateToken(token);
+            if (!validated) throw new ErrorWithHttpCode(400, "Error validating token");
+            const result = await this.userBooksService.updateBook(validated.id, book);
             response.json(result);
         } catch (error) {
             response.status(error.httpCode).json(error);

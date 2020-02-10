@@ -10,6 +10,7 @@ class UserBooksService {
         this.deleteBookFromCollection = this.deleteBookFromCollection.bind(this);
         this.setFavorite = this.setFavorite.bind(this);
         this.getFavorites = this.getFavorites.bind(this);
+        this.updateBook = this.updateBook.bind(this);
     }
 
     async getUserBooks(id) {
@@ -75,7 +76,7 @@ class UserBooksService {
             if (bookRef) {
                 bookRef.isFavorited = book.isFavorited;
             } else {
-                console.log(books.push(book));
+                books.push(book);
             }
             await firebase.database().ref("users").child(id).update({ books: books }, (error) => {
                 if (error) throw new ErrorWithHttpCode(400, error.message);
@@ -94,7 +95,22 @@ class UserBooksService {
         catch (error) {
             throw new ErrorWithHttpCode(error.httpCode || 500, error.message || "Ooops! Something went wrong on the server!");
         }
+    }
 
+    async updateBook(id, book) {
+        try {
+            const books = await this.getUserBooks(id);
+            const bookRef = books.find(item => item.id === book.id);
+            if (bookRef) {
+                const index = books.indexOf(bookRef);
+                await firebase.database().ref(`users/${id}/books/${index}`).set(book);
+                return book;
+            } else {
+                return book;
+            }
+        } catch (error) {
+            throw new ErrorWithHttpCode(error.httpCode || 500, error.message || "Ooops! Something went wrong on the server!");
+        }
     }
 }
 
