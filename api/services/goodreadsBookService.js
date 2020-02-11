@@ -123,7 +123,7 @@ class GoodreadsBookService {
         try {
             let formatted = {
                 id: book.id._text,
-                title: book.title._text || this.getBookTitle(book.title._cdata),
+                title: this.getBookTitle(book.title._text) || this.getBookTitle(book.title._cdata),
                 imageUrl: book.image_url._text,
                 smallImageUrl: book.small_image_url._text,
                 description: book.description._cdata.replace(/(&nbsp;|<([^>]+)>)/ig, '\n'), //replace <br> tags with linebreaks
@@ -162,9 +162,10 @@ class GoodreadsBookService {
     }
 
     getBookTitle(string) {
+        if (!string) return null;
         let stringTitle = string;
         let seriesSeparator = stringTitle.indexOf("(");
-        let title = stringTitle.substr(0, seriesSeparator > 0 ? seriesSeparator : stringTitle.length).trim();
+        let title = stringTitle.substring(0, seriesSeparator > 0 ? seriesSeparator : stringTitle.length).trim();
         return title;
     }
 

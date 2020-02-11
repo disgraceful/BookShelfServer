@@ -11,6 +11,7 @@ class UserBooksService {
         this.setFavorite = this.setFavorite.bind(this);
         this.getFavorites = this.getFavorites.bind(this);
         this.updateBook = this.updateBook.bind(this);
+        this.finishBook = this.finishBook.bind(this);
     }
 
     async getUserBooks(id) {
@@ -40,6 +41,7 @@ class UserBooksService {
         try {
             const books = await this.getUserBooks(id);
             const bookRef = books.find(item => item.id === book.id);
+
             if (bookRef || books.includes(book)) {
                 bookRef.status = collection;
             } else {
@@ -103,13 +105,21 @@ class UserBooksService {
             const bookRef = books.find(item => item.id === book.id);
             if (bookRef) {
                 const index = books.indexOf(bookRef);
+                this.finishBook(book);
                 await firebase.database().ref(`users/${id}/books/${index}`).set(book);
-                return book;
-            } else {
-                return book;
+
             }
+            return book;
+
         } catch (error) {
             throw new ErrorWithHttpCode(error.httpCode || 500, error.message || "Ooops! Something went wrong on the server!");
+        }
+    }
+
+    finishBook(book) {
+        if (book.pagesRead === book.pages || book.status === "finished") {
+            book.status = "finished";
+            book.pagesRead = book.pages
         }
     }
 }
