@@ -1,5 +1,6 @@
 import firebase from "firebase";
 import { ErrorWithHttpCode } from "../error/ErrorWithHttpCode";
+import { UserData } from "../model/UserData"
 
 class UserBooksService {
     constructor(userService) {
@@ -41,17 +42,18 @@ class UserBooksService {
         try {
             const books = await this.getUserBooks(id);
             const bookRef = books.find(item => item.id === book.id);
-
-            if (bookRef || books.includes(book)) {
-                bookRef.status = collection;
+            if (bookRef) {
+                bookRef = book;
+                bookRef.userData.status = collection;
             } else {
-                book.status = collection;
+                book.userData.status = collection;
                 books.push(book);
             }
             await firebase.database().ref("users").child(id).update({ books: books }, (error) => {
                 if (error) throw new ErrorWithHttpCode(400, error.message);
             });
-            return book;
+            console.log(books);
+            return books.find(item => item.id === book.id);
         } catch (error) {
             throw new ErrorWithHttpCode(error.httpCode || 500, error.message || "Ooops! Something went wrong on the server!");
         }
@@ -61,10 +63,14 @@ class UserBooksService {
         try {
             const books = await this.getUserBooks(id);
             const bookRef = books.find(item => item.id === bookId);
-            const index = books.indexOf(bookRef);
-            await firebase.database().ref(`users/${id}/books/${index}`).set(null);
-            bookRef.status = "not reading";
-            return bookRef;
+            if (bookRef) {
+                const index = books.indexOf(bookRef);
+                await firebase.database().ref(`users/${id}/books/${index}`).set(null);
+                bookRef.userData = new UserData();
+                return bookRef;
+            } else {
+                return false;
+            }
         } catch (error) {
             throw new ErrorWithHttpCode(error.httpCode || 500, error.message || "Ooops! Something went wrong on the server!");
         }
@@ -103,24 +109,25 @@ class UserBooksService {
         try {
             const books = await this.getUserBooks(id);
             const bookRef = books.find(item => item.id === book.id);
+            console.log(bookRef);
             if (bookRef) {
                 const index = books.indexOf(bookRef);
-                this.finishBook(book);
                 await firebase.database().ref(`users/${id}/books/${index}`).set(book);
-
+                const snapshot = await firebase.database().ref(`users/${id}/books/${index}`).once("value");
+                return snapshot.val();
             }
+
             return book;
 
         } catch (error) {
+            console.log(error);
             throw new ErrorWithHttpCode(error.httpCode || 500, error.message || "Ooops! Something went wrong on the server!");
         }
     }
 
     finishBook(book) {
-        if (book.pagesRead === book.pages || book.status === "finished") {
-            book.status = "finished";
-            book.pagesRead = book.pages
-        }
+        book.status = "finished";
+        book.pagesRead = book.pages
     }
 }
 

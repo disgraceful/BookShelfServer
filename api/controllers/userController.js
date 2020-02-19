@@ -137,6 +137,7 @@ class UserController {
             const validated = this.tokenService.validateToken(token);
             if (!validated) throw new ErrorWithHttpCode(400, "Error validating token");
             const result = await this.userBooksService.updateBook(validated.id, book);
+            console.log("result" + result)
             response.json(result);
         } catch (error) {
             response.status(error.httpCode).json(error);

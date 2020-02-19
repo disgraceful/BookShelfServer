@@ -3,12 +3,14 @@ import GoodreadsBookService from "../services/goodreadsBookService";
 import { ErrorWithHttpCode } from "../error/ErrorWithHttpCode";
 import UserService from "../services/userService";
 import TokenService from "../services/tokenService";
+import FormatBookService from "../services/formatBookService"
 
 const dev_key = process.env.GOODREADS_KEY
 const root = "https://www.goodreads.com/"
 const userService = new UserService();
 const tokenService = new TokenService();
-const goodreadsBookService = new GoodreadsBookService(userService);
+const formatBookService = new FormatBookService();
+const goodreadsBookService = new GoodreadsBookService(userService, formatBookService);
 
 class BookController {
     constructor(goodreadsBookService, tokenService) {
