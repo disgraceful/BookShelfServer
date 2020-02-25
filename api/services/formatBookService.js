@@ -9,6 +9,8 @@ class FormatBookService {
     constructor() {
         this.formatBooksForSearch = this.formatBooksForSearch.bind(this);
         this.formatBookForBookPage = this.formatBookForBookPage.bind(this);
+        this.formatSeries = this.formatSeries.bind(this);
+        this.formatSeriesWork = this.formatSeriesWork.bind(this);
         this.getBookTitle = this.getBookTitle.bind(this);
         this.getAllBookAuthors = this.getAllBookAuthors.bind(this);
         this.mapAuthor = this.mapAuthor.bind(this);
@@ -71,6 +73,39 @@ class FormatBookService {
         catch (error) {
             console.log(error);
             throw new ErrorWithHttpCode(400, "Failed to retrieve data from book");
+        }
+    }
+
+    formatSeries(series) {
+        return {
+            id: series.id._text,
+            title: series.title._cdata,
+            workCount: series.primary_work_count._text,
+        }
+    }
+
+
+    formatSeriesWork(seriesWork) {
+        try {
+            let result = seriesWork.slice(0, 6);
+            result = result.map(work => {
+                let book = work.work.best_book
+                let formatted = {
+                    position: work.user_position._text,
+                    id: book.id._text,
+                    title: this.getBookTitle(book.title._text),
+                    author: {
+                        id: book.author.id._text,
+                        name: book.author.name._text,
+                    },
+                    image_url: book.image_url._cdata
+                }
+
+                return formatted;
+            });
+            return result;
+        } catch (error) {
+            console.log(error);
         }
     }
 

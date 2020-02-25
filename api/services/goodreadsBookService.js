@@ -10,6 +10,7 @@ class GoodreadsBookService {
         this.searchBooks = this.searchBooks.bind(this);
         this.getBookByGoodreadsId = this.getBookByGoodreadsId.bind(this);
         this.fetchUserBookData = this.fetchUserBookData.bind(this);
+        this.getSeriesByGoodreadsId = this.getSeriesByGoodreadsId.bind(this);
         this.getValueFromGoodreads = this.getValueFromGoodreads.bind(this);
         this.findValue = this.findValue.bind(this);
 
@@ -32,11 +33,11 @@ class GoodreadsBookService {
     async getBookByGoodreadsId(url) {
         try {
             const converted = await this.getValueFromGoodreads(url);
-            let book = this.findValue(converted, "book");
+            const book = this.findValue(converted, "book");
             if (!book) {
                 throw new ErrorWithHttpCode(404, "Book with that id is not found")
             }
-            let formatted = this.formatBookService.formatBookForBookPage(book);
+            const formatted = this.formatBookService.formatBookForBookPage(book);
             return formatted;
         } catch (error) {
             throw new ErrorWithHttpCode(error.httpCode || 500, error.message);
@@ -51,6 +52,20 @@ class GoodreadsBookService {
         } catch (error) {
             throw new ErrorWithHttpCode(error.httpCode || 500, error.message);
         }
+    }
+
+    async getSeriesByGoodreadsId(url) {
+        try {
+            const converted = await this.getValueFromGoodreads(url);
+            const series = this.findValue(converted, "series");
+            const seriesWork = this.findValue(series, "series_work");
+            const result = this.formatBookService.formatSeries(series);
+            result.books = this.formatBookService.formatSeriesWork(seriesWork);
+            return result;
+        } catch (error) {
+            throw new ErrorWithHttpCode(error.httpCode || 500, error.message);
+        }
+
     }
 
     async getValueFromGoodreads(url) {
