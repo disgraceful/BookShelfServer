@@ -43,7 +43,6 @@ class UserBooksService {
             const books = await this.getUserBooks(id);
             const bookRef = books.find(item => item.id === book.id);
             if (bookRef) {
-                bookRef = book;
                 bookRef.userData.status = collection;
             } else {
                 book.userData.status = collection;
@@ -61,17 +60,20 @@ class UserBooksService {
 
     async deleteBookFromCollection(id, bookId) {
         try {
-            const books = await this.getUserBooks(id);
+            let books = await this.getUserBooks(id);
             const bookRef = books.find(item => item.id === bookId);
             if (bookRef) {
-                const index = books.indexOf(bookRef);
-                await firebase.database().ref(`users/${id}/books/${index}`).set(null);
+                books = books.filter(item => item.id !== bookRef.id);
+                await firebase.database().ref("users").child(id).update({ books: books }, (error) => {
+                    if (error) throw new ErrorWithHttpCode(400, error.message);
+                });
                 bookRef.userData = new UserData();
                 return bookRef;
             } else {
                 return false;
             }
         } catch (error) {
+            console.log(error);
             throw new ErrorWithHttpCode(error.httpCode || 500, error.message || "Ooops! Something went wrong on the server!");
         }
     }
@@ -82,15 +84,17 @@ class UserBooksService {
             const bookRef = books.find(item => item.id === book.id);
             console.log(bookRef);
             if (bookRef) {
-                bookRef.isFavorited = book.isFavorited;
+                bookRef.userData.isFavorited = !book.userData.isFavorited;
             } else {
+                book.userData.isFavorited = !book.userData.isFavorited;
                 books.push(book);
             }
             await firebase.database().ref("users").child(id).update({ books: books }, (error) => {
                 if (error) throw new ErrorWithHttpCode(400, error.message);
             });
-            return book;
+            return books.find(item => item.id === book.id);
         } catch (error) {
+            console.log(error);
             throw new ErrorWithHttpCode(error.httpCode || 500, error.message || "Ooops! Something went wrong on the server!");
         }
     }
