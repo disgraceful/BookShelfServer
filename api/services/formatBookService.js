@@ -1,5 +1,7 @@
 import { ErrorWithHttpCode } from "../error/ErrorWithHttpCode";
-import { Book } from "../model/Book"
+import { Book } from "../model/Book";
+
+
 const genresExceptions = ["to-read", "currently-reading", "owned", "default", "favorites", "books-i-own",
     "ebook", "kindle", "library", "audiobook", "owned-books", "audiobooks", "my-books",
     "ebooks", "to-buy", "english", "calibre", "books", "british", "audio", "my-library",
@@ -7,39 +9,24 @@ const genresExceptions = ["to-read", "currently-reading", "owned", "default", "f
 
 class FormatBookService {
     constructor() {
-        this.formatBooksForSearch = this.formatBooksForSearch.bind(this);
+        this.formatBookForSearch = this.formatBookForSearch.bind(this);
         this.formatBookForBookPage = this.formatBookForBookPage.bind(this);
-        this.formatSeries = this.formatSeries.bind(this);
-        this.formatSeriesWork = this.formatSeriesWork.bind(this);
-        this.getBookTitle = this.getBookTitle.bind(this);
-        this.getAllBookAuthors = this.getAllBookAuthors.bind(this);
-        this.mapAuthor = this.mapAuthor.bind(this);
-        this.formatDescription = this.formatDescription.bind(this);
+        this.formatSeriesForSeriesPage = this.formatSeriesForSeriesPage.bind(this);
     }
 
-    formatBooksForSearch(books) {
+    formatBookForSearch(book) {
         try {
-            let formattedBooks = [];
-            books.forEach(book => {
-                let stringTitle = book.best_book.title._text;
-                let seriesSeparator = stringTitle.indexOf("(");
-                let title = stringTitle.substr(0, seriesSeparator > 0 ? seriesSeparator : stringTitle.length).trim();
-                let seriesTitle = seriesSeparator < 0 ? "" : stringTitle.substr(seriesSeparator, stringTitle.indexOf(")") - seriesSeparator + 1);
-                const newBook = {
-                    year: book.original_publication_year._text,
-                    goodreadsRating: book.average_rating._text,
-                    id: book.best_book.id._text,
-                    title: title,
-                    seriesTitle: seriesTitle,
-                    authorName: book.best_book.author.name._text,
-                    imageUrl: book.best_book.image_url._text,
-                    smallImageUrl: book.best_book.small_image_url._text,
-                }
-                formattedBooks.push(newBook);
-            })
-            return formattedBooks;
+            return {
+                isbn: book.isbn13._cdata,
+                id: book.id._text,
+                title: this.getBookTitle(book.title._text) || this.getBookTitle(book.title._cdata),
+                imageUrl: book.image_url._text,
+                author: this.formatAuthorForSearch(book.authors.author),
+                series: this.formatSeries(book.series_works.series_work).fullName,
+            }
         }
         catch (error) {
+            console.log(error);
             throw new ErrorWithHttpCode(400, "Failed to retrieve data from book");
         }
     }
@@ -47,6 +34,7 @@ class FormatBookService {
     formatBookForBookPage(book) {
         try {
             let formatted = {
+                isbn: book.isbn13._cdata,
                 id: book.id._text,
                 title: this.getBookTitle(book.title._text) || this.getBookTitle(book.title._cdata),
                 imageUrl: book.image_url._text,
@@ -56,19 +44,11 @@ class FormatBookService {
                 goodreadsRating: book.average_rating._text,
                 pages: book.num_pages._cdata,
             };
-            const authors = book.authors.author;
-            const trueAuthors = Array.isArray(authors) ? this.getAllBookAuthors(authors) : [this.mapAuthor(authors)];
-            let series = book.series_works.series_work;
-            if (Array.isArray(series)) {
-                series = series[0];
-            }
-            let trueSeries = !series ? null : {
-                id: series.series.id._text,
-                fullName: `(${series.series.title._cdata.trim()} #${series.user_position._text})`
-            }
+            formatted.authors = this.formatAuthor(book.authors.author);
+            formatted.series = this.formatSeries(book.series_works.series_work);
             formatted.genres = this.formatGenresForBook(book.popular_shelves.shelf);
-            return new Book(formatted.id, formatted.title, formatted.imageUrl, formatted.smallImageUrl,
-                formatted.description, formatted.publishedYear, formatted.goodreadsRating, formatted.pages, trueAuthors, trueSeries, formatted.genres);
+            return new Book(formatted.isbn, formatted.id, formatted.title, formatted.imageUrl, formatted.smallImageUrl,
+                formatted.description, formatted.publishedYear, formatted.goodreadsRating, formatted.pages, formatted.authors, formatted.series, formatted.genres);
         }
         catch (error) {
             console.log(error);
@@ -76,14 +56,13 @@ class FormatBookService {
         }
     }
 
-    formatSeries(series) {
+    formatSeriesForSeriesPage(series) {
         return {
             id: series.id._text,
             title: series.title._cdata,
             workCount: series.primary_work_count._text,
         }
     }
-
 
     formatSeriesWork(seriesWork) {
         try {
@@ -100,7 +79,6 @@ class FormatBookService {
                     },
                     image_url: book.image_url._cdata
                 }
-
                 return formatted;
             });
             return result;
@@ -130,6 +108,25 @@ class FormatBookService {
         let newD = descr.replace(new RegExp(/\<[\s\S]*?\/>/gy), ""); //replace all first tags
         newD = newD.replace(new RegExp(/\<br\s\/>/g), "\n"); //replace html line-breaks with \n
         return newD;
+    }
+
+    formatSeries(series) {
+        if (Array.isArray(series)) {
+            series = series[0];
+        }
+        return series ? {
+            id: series.series.id._text,
+            fullName: `(${series.series.title._cdata.trim()} #${series.user_position._text})`
+        } : null;
+
+    }
+
+    formatAuthor(authors) {
+        return Array.isArray(authors) ? this.getAllBookAuthors(authors) : [this.mapAuthor(authors)];
+    }
+
+    formatAuthorForSearch(authors) {
+        return Array.isArray(authors) ? authors[0].name._text : authors.name._text;
     }
 
     getAllBookAuthors(authors) {

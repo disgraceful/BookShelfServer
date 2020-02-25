@@ -1,7 +1,8 @@
 import { UserData } from "./UserData"
 
 export class Book {
-    constructor(id, title, imgUrl, smallImgUrl, desc, pubYear, goodreadsRating, pages, authors, series, genres) {
+    constructor(isbn, id, title, imgUrl, smallImgUrl, desc, pubYear, goodreadsRating, pages, authors, series, genres) {
+        this.isbn = isbn;
         this.id = id;
         this.title = title;
         this.imageUrl = imgUrl;
