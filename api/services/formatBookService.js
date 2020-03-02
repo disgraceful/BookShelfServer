@@ -5,7 +5,7 @@ import { Book } from "../model/Book";
 const genresExceptions = ["to-read", "currently-reading", "owned", "default", "favorites", "books-i-own",
     "ebook", "kindle", "library", "audiobook", "owned-books", "audiobooks", "my-books",
     "ebooks", "to-buy", "english", "calibre", "books", "british", "audio", "my-library",
-    "favourites", "re-read", "general", "e-books"];
+    "favourites", "re-read", "general", "e-books", "fiction", "ya", "series"];
 
 class FormatBookService {
     constructor() {
@@ -16,13 +16,14 @@ class FormatBookService {
 
     formatBookForSearch(book) {
         try {
+            const series = this.formatSeriesForBook(book.series_works.series_work)
             return {
                 isbn: book.isbn13._cdata,
                 id: book.id._text,
                 title: this.getBookTitle(book.title._text) || this.getBookTitle(book.title._cdata),
                 imageUrl: book.image_url._text,
                 author: this.formatAuthorForSearch(book.authors.author),
-                series: this.formatSeries(book.series_works.series_work).fullName,
+                series: series ? series.fullName : ""
             }
         }
         catch (error) {
@@ -45,7 +46,7 @@ class FormatBookService {
                 pages: book.num_pages._cdata,
             };
             formatted.authors = this.formatAuthor(book.authors.author);
-            formatted.series = this.formatSeries(book.series_works.series_work);
+            formatted.series = this.formatSeriesForBook(book.series_works.series_work);
             formatted.genres = this.formatGenresForBook(book.popular_shelves.shelf);
             return new Book(formatted.isbn, formatted.id, formatted.title, formatted.imageUrl, formatted.smallImageUrl,
                 formatted.description, formatted.publishedYear, formatted.goodreadsRating, formatted.pages, formatted.authors, formatted.series, formatted.genres);
@@ -61,25 +62,17 @@ class FormatBookService {
             id: series.id._text,
             title: series.title._cdata,
             workCount: series.primary_work_count._text,
+            allWorks: series.series_works_count._text,
         }
     }
 
-    formatSeriesWork(seriesWork) {
+    formatSeriesWork(series, workCount) {
         try {
-            let result = seriesWork.slice(0, 6);
+            const seriesWork = series.series_works.series_work;
+            let result = seriesWork.slice(0, workCount);
             result = result.map(work => {
                 let book = work.work.best_book
-                let formatted = {
-                    position: work.user_position._text,
-                    id: book.id._text,
-                    title: this.getBookTitle(book.title._text),
-                    author: {
-                        id: book.author.id._text,
-                        name: book.author.name._text,
-                    },
-                    image_url: book.image_url._cdata
-                }
-                return formatted;
+                return book.id._text;
             });
             return result;
         } catch (error) {
@@ -105,12 +98,15 @@ class FormatBookService {
     }
 
     formatDescription(descr) {
-        let newD = descr.replace(new RegExp(/\<[\s\S]*?\/>/gy), ""); //replace all first tags
-        newD = newD.replace(new RegExp(/\<br\s\/>/g), "\n"); //replace html line-breaks with \n
+        console.log(descr + "\n");
+        let newD = descr.replace(new RegExp(/<br\s*\/?>/g), "\n"); //replace all first tags
+        newD = newD.replace(new RegExp(/<[^>]*>/g), ""); //replace html line-breaks with \n
+
+        console.log(newD + "\n");
         return newD;
     }
 
-    formatSeries(series) {
+    formatSeriesForBook(series) {
         if (Array.isArray(series)) {
             series = series[0];
         }

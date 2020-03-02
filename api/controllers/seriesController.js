@@ -1,12 +1,9 @@
-import "dotenv/config"
 import GoodreadsBookService from "../services/goodreadsBookService";
 import { ErrorWithHttpCode } from "../error/ErrorWithHttpCode";
 import UserService from "../services/userService";
 import TokenService from "../services/tokenService";
 import FormatBookService from "../services/formatBookService"
 
-const dev_key = process.env.GOODREADS_KEY
-const root = "https://www.goodreads.com/"
 const userService = new UserService();
 const tokenService = new TokenService();
 const formatBookService = new FormatBookService();
@@ -28,15 +25,12 @@ class SeriesController {
             if (!seriesId) throw new ErrorWithHttpCode(400, "Series id is empty");
             const validated = this.tokenService.validateToken(token);
             if (!validated) throw new ErrorWithHttpCode(400, "Error validating token");
-            const url = `${root}series/${seriesId}?key=${dev_key}`;
-            const result = await this.goodreadsBookService.getSeriesByGoodreadsId(url);
+            const result = await this.goodreadsBookService.getSeriesByGoodreadsId(seriesId);
             response.json(result);
         } catch (error) {
             response.status(error.httpCode).json({ httpCode: error.httpCode, message: error.message });
         }
     }
-
-
 }
 
 export default new SeriesController(goodreadsBookService, tokenService)

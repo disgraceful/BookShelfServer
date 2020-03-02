@@ -50,7 +50,6 @@ class GoodreadsBookService {
             const formatted = this.formatBookService.formatBookForBookPage(book);
             formatted.imageUrl = await this.formatImageUrl(formatted.imageUrl, formatted.isbn);
             formatted.smallImageUrl = formatted.imageUrl;
-            console.log(formatted);
             return await this.fetchUserBookData(userId, formatted);
         } catch (error) {
             console.log(error);
@@ -83,13 +82,13 @@ class GoodreadsBookService {
         }
     }
 
-    async getSeriesByGoodreadsId(url) {
+    async getSeriesByGoodreadsId(id) {
         try {
+            const url = `${root}series/${id}?key=${dev_key}`;
             const converted = await this.getValueFromGoodreads(url);
             const series = this.findValue(converted, "series");
-            const seriesWork = this.findValue(series, "series_work");
-            const result = this.formatBookService.formatSeries(series);
-            result.books = this.formatBookService.formatSeriesWork(seriesWork);
+            const result = this.formatBookService.formatSeriesForSeriesPage(series);
+            result.bookIds = this.formatBookService.formatSeriesWork(series, result.workCount);
             return result;
         } catch (error) {
             throw new ErrorWithHttpCode(error.httpCode || 500, error.message);
@@ -109,19 +108,15 @@ class GoodreadsBookService {
     }
 
     async formatImageUrl(url, isbn) {
-        console.log(url);
         let imageUrl = "";
-        console.log(url.includes("nophoto") && isbn);
         if (url.includes("nophoto") && isbn) {
             imageUrl = `${abeBooksUrl}${isbn}.jpg`;
             try {
                 const response = await axios.get(imageUrl);
-                console
                 if (response.status !== 404) {
                     return imageUrl;
                 }
             } catch (error) {
-                console.log("all fine", error);
                 return defaultImgUrl;
             }
         }
