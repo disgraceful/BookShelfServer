@@ -98,11 +98,8 @@ class FormatBookService {
     }
 
     formatDescription(descr) {
-        console.log(descr + "\n");
-        let newD = descr.replace(new RegExp(/<br\s*\/?>/g), "\n"); //replace all first tags
-        newD = newD.replace(new RegExp(/<[^>]*>/g), ""); //replace html line-breaks with \n
-
-        console.log(newD + "\n");
+        let newD = descr.replace(new RegExp(/<br\s*\/?>/g), "\n");//replace html line-breaks with \n
+        newD = newD.replace(new RegExp(/<[^>]*>/g), "");  //replace all other html tags
         return newD;
     }
 
