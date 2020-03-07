@@ -17,6 +17,7 @@ class GoodreadsBookService {
         this.getBookByGoodreadsId = this.getBookByGoodreadsId.bind(this);
         this.fetchUserBookData = this.fetchUserBookData.bind(this);
         this.getSeriesByGoodreadsId = this.getSeriesByGoodreadsId.bind(this);
+        this.getAuthorByGoodreadsId = this.getAuthorByGoodreadsId.bind(this);
         this.getValueFromGoodreads = this.getValueFromGoodreads.bind(this);
         this.findValue = this.findValue.bind(this);
 
@@ -91,6 +92,19 @@ class GoodreadsBookService {
             result.bookIds = this.formatBookService.formatSeriesWork(series, result.workCount);
             return result;
         } catch (error) {
+            throw new ErrorWithHttpCode(error.httpCode || 500, error.message);
+        }
+    }
+
+    async getAuthorByGoodreadsId(id) {
+        try {
+            const url = `${root}author/show/${id}?key=${dev_key}`
+            const converted = await this.getValueFromGoodreads(url);
+            const author = this.formatBookService.formatAuthorForAuthorPage(this.findValue(converted, "author"));
+            author.books = this.formatBookService.formatAuthorBooks(this.findValue(converted, "books"));
+            return author;
+        } catch (error) {
+            console.log(error);
             throw new ErrorWithHttpCode(error.httpCode || 500, error.message);
         }
     }

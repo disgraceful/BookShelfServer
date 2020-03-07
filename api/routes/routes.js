@@ -1,8 +1,9 @@
 "use strict"
 import AuthController from "../controllers/authController";
 import BookController from "../controllers/bookController";
-import UserController from "../controllers/userController"
-import SeriesController from "../controllers/seriesController"
+import UserController from "../controllers/userController";
+import SeriesController from "../controllers/seriesController";
+import AuthorController from "../controllers/authorController";
 
 export default (app) => {
     app.post("/auth/login", AuthController.signInUser);
@@ -16,7 +17,7 @@ export default (app) => {
     app.get("/user/:collection", UserController.getCollection);
     app.post("/user/:collection", UserController.addToCollection);
     app.delete("/user/collection", UserController.deleteBook);
-    app.put("/user/collection", UserController.updateBook)
-    app.get("/series/:id", SeriesController.getSeriesById)
-
+    app.put("/user/collection", UserController.updateBook);
+    app.get("/series/:id", SeriesController.getSeriesById);
+    app.get("/author/:id", AuthorController.getAuthorInfo);
 };      

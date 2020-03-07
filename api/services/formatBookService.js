@@ -1,7 +1,6 @@
 import { ErrorWithHttpCode } from "../error/ErrorWithHttpCode";
 import { Book } from "../model/Book";
 
-
 const genresExceptions = ["to-read", "currently-reading", "owned", "default", "favorites", "books-i-own",
     "ebook", "kindle", "library", "audiobook", "owned-books", "audiobooks", "my-books",
     "ebooks", "to-buy", "english", "calibre", "books", "british", "audio", "my-library",
@@ -12,6 +11,7 @@ class FormatBookService {
         this.formatBookForSearch = this.formatBookForSearch.bind(this);
         this.formatBookForBookPage = this.formatBookForBookPage.bind(this);
         this.formatSeriesForSeriesPage = this.formatSeriesForSeriesPage.bind(this);
+        this.format
     }
 
     formatBookForSearch(book) {
@@ -78,6 +78,25 @@ class FormatBookService {
         } catch (error) {
             console.log(error);
         }
+    }
+
+    formatAuthorForAuthorPage(author) {
+        return {
+            id: author.id._text,
+            name: author.name._text,
+            imageUrl: author.large_image_url,
+            about: this.formatDescription(author.about._cdata),
+            workCount: author.works_count._text,
+            bornDate: author.born_at._text,
+            deathDate: author.died_at._text,
+        }
+    }
+
+    formatAuthorBooks(books) {
+        const authorBooks = books.book;
+        return authorBooks.map(book => {
+            return book.id._text
+        });
     }
 
     //transform goodreads 'shelves' to genres
