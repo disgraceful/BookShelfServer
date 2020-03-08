@@ -20,4 +20,5 @@ export default (app) => {
     app.put("/user/collection", UserController.updateBook);
     app.get("/series/:id", SeriesController.getSeriesById);
     app.get("/author/:id", AuthorController.getAuthorInfo);
+    app.get("/author/:id/series", AuthorController.getAuthorSeries);
 };      

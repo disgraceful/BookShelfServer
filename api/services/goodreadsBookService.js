@@ -109,6 +109,20 @@ class GoodreadsBookService {
         }
     }
 
+    async getAuthorSeries(id) {
+        try {
+            const url = `${root}series/list/${id}.xml?key=${dev_key}`
+            console.log(url);
+            const converted = await this.getValueFromGoodreads(url);
+            const value = this.findValue(converted, "series_work");
+            const series = this.formatBookService.formatSeriesForAuthorPage(value);
+            return series;
+        } catch (error) {
+            console.log(error);
+            throw new ErrorWithHttpCode(error.httpCode || 500, error.message);
+        }
+    }
+
     async getValueFromGoodreads(url) {
         try {
             const response = await axios.get(url);

@@ -84,7 +84,7 @@ class FormatBookService {
         return {
             id: author.id._text,
             name: author.name._text,
-            imageUrl: author.large_image_url,
+            imageUrl: author.large_image_url._cdata,
             about: this.formatDescription(author.about._cdata),
             workCount: author.works_count._text,
             bornDate: author.born_at._text,
@@ -97,6 +97,21 @@ class FormatBookService {
         return authorBooks.map(book => {
             return book.id._text
         });
+    }
+
+    formatSeriesForAuthorPage(series) {
+        const mapped = series
+            .map(item => {
+                return {
+                    id: item.series.id._text,
+                    title: item.series.title._cdata,
+                    rating: item.work.ratings_sum._text
+                }
+            })
+            .filter((item, i, self) => {
+                return i === self.findIndex(e => e.title.toLowerCase().trim() === item.title.toLowerCase().trim());
+            })
+        return mapped.sort((a, b) => b.rating - a.rating);
     }
 
     //transform goodreads 'shelves' to genres
@@ -117,6 +132,7 @@ class FormatBookService {
     }
 
     formatDescription(descr) {
+        if (!descr) return "";
         let newD = descr.replace(new RegExp(/<br\s*\/?>/g), "\n");//replace html line-breaks with \n
         newD = newD.replace(new RegExp(/<[^>]*>/g), "");  //replace all other html tags
         return newD;

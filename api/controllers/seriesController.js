@@ -14,10 +14,11 @@ class SeriesController {
         this.goodreadsBookService = goodreadsBookService;
         this.tokenService = tokenService;
         this.getSeriesById = this.getSeriesById.bind(this);
+       
     }
 
     async getSeriesById(request, response) {
-        console.log("Get Series By Id request accepted!")
+        console.log("Get Series By Id request accepted!");
         const seriesId = request.params.id;
         const token = request.headers['x-access-token'];
         console.log(seriesId, token);
@@ -31,6 +32,8 @@ class SeriesController {
             response.status(error.httpCode).json({ httpCode: error.httpCode, message: error.message });
         }
     }
+
+ 
 }
 
 export default new SeriesController(goodreadsBookService, tokenService)
