@@ -1,12 +1,12 @@
-import GoodreadsBookService from "../services/goodreadsBookService";
+import GoodreadsBookService from "../services/goodreads/goodreadsBookService";
 import { ErrorWithHttpCode } from "../error/ErrorWithHttpCode";
 import UserService from "../services/userService";
 import TokenService from "../services/tokenService";
-import FormatBookService from "../services/formatBookService"
+import FormatBookService from "../services/formatting/formatBookService"
 
-const userService = new UserService();
 const tokenService = new TokenService();
 const formatBookService = new FormatBookService();
+const userService = new UserService();
 const goodreadsBookService = new GoodreadsBookService(userService, formatBookService);
 
 class BookController {
@@ -42,7 +42,7 @@ class BookController {
             if (!bookId) throw new ErrorWithHttpCode(400, "Id is empty");
             const validated = this.tokenService.validateToken(token);
             if (!validated) throw new ErrorWithHttpCode(400, "Error validating token");
-            const result = await this.goodreadsBookService.getBookWithUserDataById(bookId, validated.id);
+            const result = await this.goodreadsBookService.getBookWithUserData(bookId, validated.id);
             response.json(result);
         } catch (error) {
             response.status(error.httpCode).json({ httpCode: error.httpCode, message: error.message });

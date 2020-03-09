@@ -17,7 +17,6 @@ class UserService {
             user = {
                 id: id,
                 email: value.email,
-                favorites: value.favorites || [],
                 books: value.books || [],
             }
             return user;

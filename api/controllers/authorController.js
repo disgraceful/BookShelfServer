@@ -1,17 +1,17 @@
-import GoodreadsBookService from "../services/goodreadsBookService";
+import GoodreadsAuhtorService from "../services/goodreads/goodreadsAuthorService";
 import { ErrorWithHttpCode } from "../error/ErrorWithHttpCode";
 import TokenService from "../services/tokenService";
-import FormatBookService from "../services/formatBookService";
-import UserService from "../services/userService";
+import FormatAuthorService from "../services/formatting/formatAuthorService";
+import FormatSeriesService from "../services/formatting/formatSeriesService";
 
 const tokenService = new TokenService();
-const formatBookService = new FormatBookService();
-const userService = new UserService();
-const goodreadsBookService = new GoodreadsBookService(userService, formatBookService);
+const formatAuthorService = new FormatAuthorService();
+const formatSeriesService = new FormatSeriesService();
+const goodreadsAuthorService = new GoodreadsAuhtorService(formatAuthorService, formatSeriesService);
 
 class AuthorController {
-    constructor(goodreadsService, tokenService) {
-        this.goodreadsService = goodreadsService;
+    constructor(goodreadsAuthorService, tokenService) {
+        this.goodreadsAuthorService = goodreadsAuthorService;
         this.tokenService = tokenService;
         this.getAuthorInfo = this.getAuthorInfo.bind(this);
         this.getAuthorSeries = this.getAuthorSeries.bind(this);
@@ -26,7 +26,7 @@ class AuthorController {
             if (!authorId) throw new ErrorWithHttpCode(400, "Request param is not valid");
             const validated = this.tokenService.validateToken(token);
             if (!validated) throw new ErrorWithHttpCode(400, "Error validating token");
-            const result = await this.goodreadsService.getAuthorByGoodreadsId(authorId);
+            const result = await this.goodreadsAuthorService.getAuthorByGoodreadsId(authorId);
             response.json(result);
         } catch (error) {
             response.status(error.httpCode).json({ httpCode: error.httpCode, message: error.message });
@@ -42,7 +42,7 @@ class AuthorController {
             if (!authorId) throw new ErrorWithHttpCode(400, "Request param is not valid");
             const validated = this.tokenService.validateToken(token);
             if (!validated) throw new ErrorWithHttpCode(400, "Error validating token");
-            const result = await this.goodreadsService.getAuthorSeries(authorId);
+            const result = await this.goodreadsAuthorService.getAuthorSeries(authorId);
             response.json(result);
         } catch (error) {
             response.status(error.httpCode).json({ httpCode: error.httpCode, message: error.message });
@@ -50,4 +50,4 @@ class AuthorController {
     }
 }
 
-export default new AuthorController(goodreadsBookService, tokenService)
+export default new AuthorController(goodreadsAuthorService, tokenService)
