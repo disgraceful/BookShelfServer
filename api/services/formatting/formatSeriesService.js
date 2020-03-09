@@ -5,6 +5,10 @@ class FormatSeriesService extends FormatBookService {
         super();
     }
 
+    formatSeriesAuthor(author) {
+        return author.name._text;
+    }
+
     formatSeriesForAuthorPage(series) {
         const mapped = series
             .map(item => {
