@@ -133,6 +133,25 @@ class UserBooksService {
         book.status = "finished";
         book.pagesRead = book.pages
     }
+
+    async getUserGenres(id) {
+        try {
+            const books = await this.getUserBooks(id);
+            let obj = {};
+            books.forEach(book => {
+                book.genres.forEach(genre => {
+                    if (!obj.hasOwnProperty(genre)) {
+                        obj[genre] = 1
+                    } else {
+                        obj[genre] += 1;
+                    }
+                })
+            });
+            return obj;
+        } catch (error) {
+
+        }
+    }
 }
 
 export default UserBooksService;
