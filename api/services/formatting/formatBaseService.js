@@ -4,15 +4,9 @@ import { Book } from "../../model/Book";
 const genresExceptions = ["to-read", "currently-reading", "owned", "default", "favorites", "books-i-own",
     "ebook", "kindle", "library", "audiobook", "owned-books", "audiobooks", "my-books",
     "ebooks", "to-buy", "english", "calibre", "books", "british", "audio", "my-library",
-    "favourites", "re-read", "general", "e-books", "fiction", "ya", "series"];
+    "favourites", "re-read", "general", "e-books", "fiction", "ya", "series", "classic"];
 
 class FormatBookService {
-    constructor() {
-
-    }
-
-   
-
     mapArrayIds(array) {
         return array.map(item => item.id._text)
     }

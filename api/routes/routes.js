@@ -14,6 +14,7 @@ export default (app) => {
     app.get("/user/books", UserController.getUserBooks);
     app.get("/user/favorite", UserController.getFavoriteBooks)
     app.post("/user/favorite", UserController.setFavorite);
+    app.get("/user/genres", UserController.getUserGenres)
     app.get("/user/:collection", UserController.getCollection);
     app.post("/user/:collection", UserController.addToCollection);
     app.delete("/user/collection", UserController.deleteBook);
@@ -21,5 +22,4 @@ export default (app) => {
     app.get("/series/:id", SeriesController.getSeriesById);
     app.get("/author/:id", AuthorController.getAuthorInfo);
     app.get("/author/:id/series", AuthorController.getAuthorSeries);
-    app.get("/user/:id/genres", UserController.getUserGenres)
 };      

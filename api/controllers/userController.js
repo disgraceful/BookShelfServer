@@ -147,13 +147,11 @@ class UserController {
 
     async getUserGenres(request, response) {
         console.log("GET User Genres request accepted");
-        const userId = request.params.id;
         const token = request.headers["x-access-token"];
-        console.log(userId, token);
         try {
             const validated = this.tokenService.validateToken(token);
             if (!validated) throw new ErrorWithHttpCode(400, "Error validating token");
-            const result = await this.userBooksService.getUserGenres(userId);
+            const result = await this.userBooksService.getUserGenres(validated.id);
             response.json(result);
         } catch (error) {
             response.status(error.httpCode).json(error);

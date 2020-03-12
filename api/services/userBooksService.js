@@ -137,19 +137,21 @@ class UserBooksService {
     async getUserGenres(id) {
         try {
             const books = await this.getUserBooks(id);
-            let obj = {};
+            let genreMap = {};
             books.forEach(book => {
-                book.genres.forEach(genre => {
-                    if (!obj.hasOwnProperty(genre)) {
-                        obj[genre] = 1
+                book.genres.slice(0, 2).forEach(genre => {
+                    if (!genreMap.hasOwnProperty(genre)) {
+                        genreMap[genre] = 1
                     } else {
-                        obj[genre] += 1;
+                        genreMap[genre] += 1;
                     }
                 })
             });
-            return obj;
-        } catch (error) {
+            return genreMap;
 
+        } catch (error) {
+            console.log(error);
+            throw new ErrorWithHttpCode(error.httpCode || 500, error.message || "Ooops! Something went wrong on the server!");
         }
     }
 }
