@@ -11,15 +11,19 @@ class FormatSeriesService extends FormatBookService {
 
     formatSeriesForAuthorPage(series) {
         const mapped = series
+            .filter((item, i, self) => {
+                return i === self.findIndex(elem => {
+                    const elemTitle = elem.series.title._cdata;
+                    const itemTitle = item.series.title._cdata;
+                    return elemTitle.toLowerCase() === itemTitle.toLowerCase();
+                })
+            })
             .map(item => {
                 return {
                     id: item.series.id._text,
                     title: item.series.title._cdata,
                     rating: item.work.ratings_sum._text
                 }
-            })
-            .filter((item, i, self) => {
-                return i === self.findIndex(e => e.title.toLowerCase().trim() === item.title.toLowerCase().trim());
             })
             .sort((a, b) => b.rating - a.rating);
         return mapped;
