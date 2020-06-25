@@ -5,9 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha --require esm 'tests/**/*.js'",
-    "start": "nodemon --exec babel-node api/server.js"
+    "build-dev": "rm -rf dist && webpack --mode development",
+    "start": "nodemon --exec babel-node ./dist/server.js"
   },
-  "author": "",
+  "author": "disgraceful",
   "license": "ISC",
   "devDependencies": {
     "@babel/cli": "^7.10.3",
@@ -15,11 +16,15 @@
     "@babel/node": "^7.10.3",
     "@babel/preset-env": "^7.10.3",
     "@babel/register": "^7.10.3",
+    "babel-loader": "^8.1.0",
     "chai": "^4.2.0",
     "chai-http": "^4.3.0",
     "esm": "^3.2.25",
     "mocha": "^8.0.1",
-    "nodemon": "^2.0.4"
+    "nodemon": "^2.0.4",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.12",
+    "webpack-node-externals": "^1.7.2"
   },
   "dependencies": {
     "axios": "^0.19.2",
