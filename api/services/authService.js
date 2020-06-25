@@ -33,7 +33,7 @@ class AuthService {
       const dbUser = snapshot.val()[key];
       existingUser.id = key;
       existingUser.books = dbUser.books || [];
-      const token = this.tokenService.createToken({ id: key }, 1000000);
+      const token = this.tokenService.createToken({ id: key }, 1000000); //change expire date!
       console.log(existingUser.id);
       return { user: existingUser, token: token };
     } catch (error) {
