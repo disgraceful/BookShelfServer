@@ -25,7 +25,8 @@ class AuthService {
             const dbUser = snapshot.val()[key];
             existingUser.id = key;
             existingUser.books = dbUser.books || [];
-            const token = this.tokenService.createToken({ id: key }, 2592000);
+            const token = this.tokenService.createToken({ id: key }, 1000000);
+            console.log(existingUser.id);
             return { user: existingUser, token: token };
         } catch (error) {
             throw new ErrorWithHttpCode(error.httpCode || 500, error.message);

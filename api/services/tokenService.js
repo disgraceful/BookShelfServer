@@ -14,9 +14,17 @@ class TokenService {
     }
 
     validateToken(token) {
-        if (!token) throw new ErrorWithHttpCode(400, "Token is invalid");
+        if (!token) throw new ErrorWithHttpCode(401, "Token is invalid");
         return jwt.verify(token, process.env.JWT_KEY, (error, decoded) => {
-            if (error) throw new ErrorWithHttpCode(500, "Failed to authenticate token");
+            if (error) {
+                console.log("Failed to validate");
+                if (error.message === "jwt expired") {
+                    console.log("Expired");
+                    throw new ErrorWithHttpCode(401, "Token has expired");
+                }
+                throw new ErrorWithHttpCode(500, "Failed to authenticate token");
+
+            };
             console.log("decoded", decoded);
             return decoded;
         })

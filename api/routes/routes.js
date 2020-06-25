@@ -5,6 +5,7 @@ import UserController from "../controllers/userController";
 import SeriesController from "../controllers/seriesController";
 import AuthorController from "../controllers/authorController";
 
+
 export default (app) => {
     app.post("/auth/login", AuthController.signInUser);
     app.post("/auth/register", AuthController.signUpUser);
@@ -22,4 +23,5 @@ export default (app) => {
     app.get("/series/:id", SeriesController.getSeriesById);
     app.get("/author/:id", AuthorController.getAuthorInfo);
     app.get("/author/:id/series", AuthorController.getAuthorSeries);
+
 };      
