@@ -53,6 +53,12 @@ class UserController {
         }
     }
 
+    async validateUser(request, response) {
+        console.log("Validate user request accepted");
+        const token = request.heders['x-access-token'];
+        console.log(token);
+    }
+
     async getCollection(request, response) {
         const collection = request.params.collection;
         console.log(`Get Books from ${collection} request accepted`);

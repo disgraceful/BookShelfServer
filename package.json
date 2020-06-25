@@ -4,16 +4,27 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon --exec babel-node api/server.js"
+    "test": "mocha --require esm 'tests/**/*.js'",
+    "build-dev": "rm -rf dist && webpack --mode development",
+    "start": "nodemon --exec babel-node ./dist/server.js"
   },
-  "author": "",
+  "author": "disgraceful",
   "license": "ISC",
   "devDependencies": {
-    "@babel/core": "^7.7.7",
-    "@babel/node": "^7.7.7",
-    "@babel/preset-env": "^7.7.7",
-    "nodemon": "^2.0.2"
+    "@babel/cli": "^7.10.3",
+    "@babel/core": "^7.10.3",
+    "@babel/node": "^7.10.3",
+    "@babel/preset-env": "^7.10.3",
+    "@babel/register": "^7.10.3",
+    "babel-loader": "^8.1.0",
+    "chai": "^4.2.0",
+    "chai-http": "^4.3.0",
+    "esm": "^3.2.25",
+    "mocha": "^8.0.1",
+    "nodemon": "^2.0.4",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.12",
+    "webpack-node-externals": "^1.7.2"
   },
   "dependencies": {
     "axios": "^0.19.2",
@@ -21,7 +32,7 @@
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
-    "firebase": "^7.6.1",
+    "firebase": "^7.15.4",
     "jsonwebtoken": "^8.5.1",
     "xml-js": "^1.6.11"
   }
