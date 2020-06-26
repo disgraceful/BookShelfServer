@@ -1,40 +1,66 @@
-## BookShelf Server
+# BookShelf Server
 
-API for BookShelf application. Uses Goodreads API and formats results in json. Authentication process is handled by Firebase.
+This pet project is an API for BookShelf application. It uses Goodreads API to find books, authors and series and formats them to json from xml for response. Users can rate and add books, authors and series to different categories (favorites, to-read, finished, etc). Users can also write reviews for read books and track their reading progress. Authorization is handled by Firebase, also Firebase Database is used to store user info.
 
-## To-do
+## Table of contents
 
-- [x] Service/controller layer
-- [x] JWT-based authorization
-- [x] CRUD with user books
-- [x] Goodreads book cover workaround
+- [General info](#general-info)
+- [Technologies](#technologies)
+- [Setup](#setup)
+- [Features](#features)
 
-- [ ] Update expired tokens
-- [ ] Generate User Feed
-- [ ] Change user account settings
-- [ ] File upload to Firebase Storage
-- [ ] Deep dive Firebase for email notifications
-- [ ] Deploy and host
-- [ ] Authorization with OAuth (Low-prio)
-- [ ] Gathering User Statistics (Low-prio)
-- [ ] Migrate to Cloud Firestore
+## General info
+
+The goal of the project is to create an API for web-application, which encapsulates all main features of book library administration system (etc Goodreads), but without social network elements. Only books and nothing more.
+
+Also I want to learn more about fullstack development, new technologies and workflow between front-end and back-end.
+
+## Technologies
+
+- Express.js - version 4.17
+- Firebase - version 7.15
+- Webpack - version 4.43
+- Axios - version 0.19
+- Mocha - version 8.0.1
 
 ## Setup
-
-### Get dependencies:
 
 ```
 npm install
 ```
 
-### Dev build
+Development build
 
 ```
-npm run serve
+npm run build-dev
 ```
 
-### Prod build
+Start nodemon dev server
 
 ```
-npm run build
+npm start
 ```
+
+Run Mocha tests
+
+```
+npm run test
+```
+
+## Features
+
+- [x] Service layer for Goodreads API access
+- [x] Firebase authorization
+- [x] JWT-based API access
+- [x] Token check and refresh at expiration
+
+### To-do list:
+
+- [ ] User Feed
+- [ ] Change user account settings
+- [ ] File upload to Firebase Storage
+- [ ] Email notifications via Firebase
+- [ ] Deploy and host
+- [ ] Authorization with OAuth (Low-prio)
+- [ ] Gathering User Statistics (Low-prio)
+- [ ] Migrate to Cloud Firestore
