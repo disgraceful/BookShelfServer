@@ -22,4 +22,5 @@ export default (app) => {
   app.get("/series/:id", SeriesController.getSeriesById);
   app.get("/author/:id", AuthorController.getAuthorInfo);
   app.get("/author/:id/series", AuthorController.getAuthorSeries);
+  app.post("/auth/validate", AuthController.validateUser);
 };
