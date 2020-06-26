@@ -33,3 +33,5 @@ app.all("/*", function (req, res, next) {
   }
 });
 app.listen(port, () => console.log(`Started on port ${port}!`));
+
+export default app;
