@@ -7,6 +7,7 @@ This pet project is an API for BookShelf application. It uses Goodreads API to f
 - [General info](#general-info)
 - [Technologies](#technologies)
 - [Setup](#setup)
+- [API routes](#routes)
 - [Features](#features)
 - [Directories](#directories)
 
@@ -47,6 +48,46 @@ Run Mocha tests
 ```
 npm run test
 ```
+
+## API routes
+
+All API calls return json objects.
+
+```
+/auth
+```
+
+User's registration, login, JWT verification.
+
+```
+/books
+```
+
+Get book by search query or id using Goodreads API.
+
+```
+/series
+```
+
+Get book series using Goodreads API.
+
+```
+/author
+```
+
+Get author information using Goodreads API.
+
+```
+/user
+```
+
+Get user data and stats.
+
+```
+/user/books
+```
+
+CRUD calls for manipulating user books collection, favorites, etc.
 
 ## Features
 
