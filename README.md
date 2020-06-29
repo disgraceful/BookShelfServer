@@ -8,6 +8,7 @@ This pet project is an API for BookShelf application. It uses Goodreads API to f
 - [Technologies](#technologies)
 - [Setup](#setup)
 - [Features](#features)
+- [Directories](#directories)
 
 ## General info
 
@@ -64,3 +65,29 @@ npm run test
 - [ ] Authorization with OAuth (Low-prio)
 - [ ] Gathering User Statistics (Low-prio)
 - [ ] Migrate to Cloud Firestore
+
+## Directories
+
+```
+/tests - mocha and chai tests
+```
+
+```
+/api/controllers - controller classes
+```
+
+```
+/api/services - service layer with main business logic
+```
+
+```
+/api/model - model classes for book and book's user data
+```
+
+```
+/api/routes - route configurations
+```
+
+```
+/api/error - error class
+```
