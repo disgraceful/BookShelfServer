@@ -33,7 +33,7 @@ class AuthService {
       const dbUser = snapshot.val()[key];
       existingUser.id = key;
       existingUser.books = dbUser.books || [];
-      const token = this.tokenService.createToken({ id: key }, 1000000); //change expire date!
+      const token = this.tokenService.createToken({ id: key, email }, 1000000); //change expire date!
       console.log(existingUser.id);
       return { user: existingUser, token: token };
     } catch (error) {
@@ -53,7 +53,10 @@ class AuthService {
       };
       const data = await firebase.database().ref("users").push(newUser);
       newUser.id = data.key;
-      const token = this.tokenService.createToken({ id: data.key }, 2592000);
+      const token = this.tokenService.createToken(
+        { id: data.key, email },
+        2592000
+      );
       return { user: newUser, token: token };
     } catch (error) {
       throw new ErrorWithHttpCode(error.httpCode || 500, error.message);
