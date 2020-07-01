@@ -49,8 +49,8 @@ class AuthController {
     console.log("Validate request accepted");
     const token = request.body.token;
     try {
-      const user = tokenService.validateToken(token);
-      response.json(user.id);
+      const validated = tokenService.validateToken(token);
+      response.json({ id: validated.id, email: validated.email });
     } catch (error) {
       response
         .status(error.httpCode)

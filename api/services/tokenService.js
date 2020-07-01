@@ -18,6 +18,7 @@ class TokenService {
     console.log(token);
     if (!token) throw new ErrorWithHttpCode(401, "Token is invalid");
     return jwt.verify(token, process.env.JWT_KEY, (error, decoded) => {
+      console.log("decoded", decoded);
       if (error) {
         console.log("Failed to validate");
         if (error.message === "jwt expired") {
