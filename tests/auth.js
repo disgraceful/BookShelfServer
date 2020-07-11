@@ -21,7 +21,7 @@ describe("Authentication", function () {
         .send({ token: validTokenString })
         .end((err, res) => {
           res.should.have.status(200);
-          assert.equal(res.body, id);
+          assert.equal(res.body.id, id);
           done();
         });
     });
