@@ -33,6 +33,7 @@ class AuthService {
       const dbUser = snapshot.val()[key];
       existingUser.id = key;
       existingUser.books = dbUser.books || [];
+      existingUser.feed = dbUser.feed || [];
       const token = this.tokenService.createToken({ id: key, email }, 1000000); //change expire date!
       console.log(existingUser.id);
       return { user: existingUser, token: token };
@@ -50,6 +51,7 @@ class AuthService {
       newUser = {
         email: user.user.email,
         books: [],
+        feed: [],
       };
       const data = await firebase.database().ref("users").push(newUser);
       newUser.id = data.key;

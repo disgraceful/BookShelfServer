@@ -6,7 +6,8 @@
   "scripts": {
     "test": "mocha --require esm 'tests/**/*.js'",
     "build-dev": "rm -rf dist && webpack --mode development",
-    "start": "nodemon --exec babel-node ./dist/server.js"
+    "start:dev": "webpack-dev-server",
+    "start": "nodemon --exec babel-node ./api/server.js"
   },
   "author": "disgraceful",
   "license": "ISC",
@@ -24,6 +25,7 @@
     "nodemon": "^2.0.4",
     "webpack": "^4.43.0",
     "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.0",
     "webpack-node-externals": "^1.7.2"
   },
   "dependencies": {

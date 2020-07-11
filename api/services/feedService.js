@@ -1,20 +1,26 @@
 import moment from "moment";
+
 const actions = {
-  TOREAD: "Will be reading",
-  FINISH: "Finished",
-  STOP: "Stopped reading",
-  READ: "Reading",
-  START: "Started reading",
+  "2read": "Will be reading",
+  finished: "Finished",
+  stopped: "Stopped reading",
+  update: "Has read",
+  reading: "Started reading",
+  not: "Not reading",
 };
 
 class FeedService {
-  generateFeed(book, action) {
+  generateFeed(book, action, pages) {
     return {
       date: moment().format("DD MMM YYYY"),
-      message: actions[action],
-      data: book,
+      message: `${actions[action]} ${pages ? pages + " pages" : ""}`,
+      data: { id: book.id, title: book.title },
     };
   }
+
+  saveFeed(feed) {}
+
+  getFeed() {}
 }
 
 export default FeedService;

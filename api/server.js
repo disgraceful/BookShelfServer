@@ -22,16 +22,14 @@ firebase.initializeApp(firebaseConfig);
 app.all("/*", function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Content-type,Accept,X-Access-Token,X-Key"
-  );
+  res.header("Access-Control-Allow-Headers", "x-access-token");
   if (req.method == "OPTIONS") {
     res.status(200).end();
   } else {
     next();
   }
 });
+
 app.listen(port, () => console.log(`Started on port ${port}!`));
 
 export default app;
