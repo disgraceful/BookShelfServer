@@ -4,6 +4,7 @@ import BookController from "../controllers/bookController";
 import UserController from "../controllers/userController";
 import SeriesController from "../controllers/seriesController";
 import AuthorController from "../controllers/authorController";
+import FeedController from "../controllers/feedController";
 
 export default (app) => {
   app.post("/auth/login", AuthController.signInUser);
@@ -19,6 +20,7 @@ export default (app) => {
   app.post("/user/books/:collection", UserController.addToCollection);
   app.delete("/user/books", UserController.deleteBook);
   app.put("/user/books", UserController.updateBook);
+  app.get("/user/feed", FeedController.getFeed);
   app.get("/series/:id", SeriesController.getSeriesById);
   app.get("/author/:id", AuthorController.getAuthorInfo);
   app.get("/author/:id/series", AuthorController.getAuthorSeries);

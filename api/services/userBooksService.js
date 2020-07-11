@@ -45,15 +45,18 @@ class UserBooksService {
     try {
       const books = await this.getUserBooks(id);
       const bookRef = books.find((item) => item.id === book.id);
-      console.log(collection);
       if (bookRef) {
         bookRef.userData.status = collection;
-        console.log(this.feedService.generateFeed(bookRef, collection));
+        const feed = this.feedService.generateFeed(bookRef, collection);
+        this.feedService.saveFeed(feed, id);
       } else {
         book.userData.status = collection;
-        console.log(this.feedService.generateFeed(book, collection));
+        const feed = this.feedService.generateFeed(book, collection);
+        this.feedService.saveFeed(feed, id);
         books.push(book);
       }
+
+      await this.feedService.getFeedByDate(id);
       await firebase
         .database()
         .ref("users")
@@ -146,7 +149,6 @@ class UserBooksService {
         const index = books.indexOf(bookRef);
         const pageDiff = book.userData.pagesRead - bookRef.userData.pagesRead;
         if (pageDiff > 0) {
-          console.log(pageDiff);
           console.log(
             this.feedService.generateFeed(bookRef, "update", pageDiff)
           );
