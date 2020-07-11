@@ -5,6 +5,17 @@ module.exports = {
   entry: {
     server: "./api/server.js",
   },
+
+  devServer: {
+    port: 4200,
+    clientLogLevel: "info",
+    // headers: {
+    //   "Access-Control-Allow-Origin": "*",
+    //   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
+    //   "Access-Control-Allow-Headers":
+    //     "X-Requested-With, content-type, Authorization, x-access-token",
+    // },
+  },
   output: {
     path: path.join(__dirname, "dist"),
     publicPath: "/",

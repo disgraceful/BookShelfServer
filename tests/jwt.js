@@ -12,11 +12,6 @@ const expiredToken =
 
 describe("TokenService", function () {
   describe("create Token", function () {
-    it("jwt create test", function () {
-      service.validateToken(expiredToken);
-      // console.log(service.validateToken(token));
-    });
-
     it("shound be different tokens", function () {
       assert.notEqual(service.createToken({ id }, expire), tokenString);
     });
