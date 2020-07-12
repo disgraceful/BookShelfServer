@@ -42,8 +42,14 @@ class FeedService {
     if (!value) {
       return {};
     }
-    const clean = this.cleanFeed(value);
-    return this.formatFeedByDate(clean);
+    try {
+      const clean = this.cleanFeed(value);
+      const formatted = this.formatFeedByDate(clean);
+      const merged = this.mergeUpdateRecords(formatted);
+      return formatted;
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   formatFeedByDate(feed) {
@@ -52,11 +58,10 @@ class FeedService {
     feed.forEach((item) => {
       const v = item;
       if (!feedMap.hasOwnProperty(v.date)) {
-        feedMap[v.date] = { data: [v.data], message: [v.message] };
+        feedMap[v.date] = [{ data: v.data, message: v.message }];
       } else {
         const curRecord = feedMap[v.date];
-        curRecord.data.splice(0, 0, v.data);
-        curRecord.message.splice(0, 0, v.message);
+        curRecord.unshift({ data: v.data, message: v.message });
       }
     });
 
@@ -78,10 +83,51 @@ class FeedService {
       })
       .map((key) => feed[key]);
     arr.sort(compare);
-    console.log(arr);
     return arr;
   }
+
+  mergeUpdateRecords(feed) {
+    Object.keys(feed).forEach((key) => {
+      const filtered = feed[key].filter((record) =>
+        record.message.includes("pages")
+      );
+
+      console.log(filtered);
+      let id = "";
+      filtered.forEach((item) => {
+        if (item.data.id !== id || id === "") {
+          id = item.data.id;
+          const pages = filtered
+            .filter((item) => item.data.id === id)
+            .reduce(pageReducer, 0);
+
+          const mergeIndex = this.getMergeIndex(feed[key], item.data.id);
+          const mergeCount = filtered.filter((item) => item.data.id === id)
+            .length;
+          feed[key].splice(
+            mergeIndex,
+            mergeCount,
+            this.generateFeed(item.data, "update", pages)
+          );
+        }
+      });
+    });
+
+    return feed;
+  }
+
+  getMergeIndex(collection, dataId) {
+    const ref = collection.find(
+      (item) => item.data.id === dataId && item.message.includes("pages")
+    );
+
+    return collection.indexOf(ref);
+  }
 }
+
+const pageReducer = (prevValue, curValue) => {
+  return prevValue + Number.parseInt(curValue.message.replace(/\D/g, ""));
+};
 
 const isFeedClean = (curRecord, nextRecord) => {
   return (
