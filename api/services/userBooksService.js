@@ -47,16 +47,13 @@ class UserBooksService {
       const bookRef = books.find((item) => item.id === book.id);
       if (bookRef) {
         bookRef.userData.status = collection;
-        const feed = this.feedService.generateFeed(bookRef, collection);
-        this.feedService.saveFeed(feed, id);
+        this.feedService.saveFeed(bookRef, collection, id);
       } else {
         book.userData.status = collection;
-        const feed = this.feedService.generateFeed(book, collection);
-        this.feedService.saveFeed(feed, id);
+        this.feedService.saveFeed(book, collection, id);
         books.push(book);
       }
 
-      await this.feedService.getFeedByDate(id);
       await firebase
         .database()
         .ref("users")
@@ -149,9 +146,7 @@ class UserBooksService {
         const index = books.indexOf(bookRef);
         const pageDiff = book.userData.pagesRead - bookRef.userData.pagesRead;
         if (pageDiff > 0) {
-          console.log(
-            this.feedService.generateFeed(bookRef, "update", pageDiff)
-          );
+          this.feedService.saveFeed(bookRef, "update", id, pageDiff);
         }
         await firebase.database().ref(`users/${id}/books/${index}`).set(book);
         const snapshot = await firebase

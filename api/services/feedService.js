@@ -21,7 +21,8 @@ class FeedService {
     };
   }
 
-  async saveFeed(feed, userId) {
+  async saveFeed(book, action, userId, pages) {
+    const feed = this.generateFeed(book, action, pages);
     const feedRef = firebase
       .database()
       .ref("users")
@@ -68,12 +69,12 @@ class FeedService {
       .filter((key, index, array) => {
         const v = feed[key];
         if (index + 1 >= array.length) {
-          return true;
+          return isFeedClean(feed[array[index - 1]], v);
         }
 
         const nextIndex = index + 1;
         next = feed[array[nextIndex]];
-        return next.data.id !== v.data.id;
+        return isFeedClean(v, next);
       })
       .map((key) => feed[key]);
     arr.sort(compare);
@@ -81,6 +82,14 @@ class FeedService {
     return arr;
   }
 }
+
+const isFeedClean = (curRecord, nextRecord) => {
+  return (
+    curRecord.data.id !== nextRecord.data.id ||
+    curRecord.message.includes("pages") ||
+    nextRecord.message.includes("pages")
+  );
+};
 
 const compare = (recordA, recordB) => {
   const dateA = moment(recordA.date, dateFormat);
