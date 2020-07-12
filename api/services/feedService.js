@@ -42,10 +42,11 @@ class FeedService {
     if (!value) {
       return {};
     }
+
     try {
       const clean = this.cleanFeed(value);
       const formatted = this.formatFeedByDate(clean);
-      const merged = this.mergeUpdateRecords(formatted);
+      this.mergeUpdateRecords(formatted);
       return formatted;
     } catch (error) {
       console.log(error);
@@ -56,12 +57,11 @@ class FeedService {
     const feedMap = {};
 
     feed.forEach((item) => {
-      const v = item;
-      if (!feedMap.hasOwnProperty(v.date)) {
-        feedMap[v.date] = [{ data: v.data, message: v.message }];
+      if (!feedMap.hasOwnProperty(item.date)) {
+        feedMap[item.date] = [{ data: item.data, message: item.message }];
       } else {
-        const curRecord = feedMap[v.date];
-        curRecord.unshift({ data: v.data, message: v.message });
+        const curRecord = feedMap[item.date];
+        curRecord.unshift({ data: item.data, message: item.message });
       }
     });
 
@@ -70,20 +70,20 @@ class FeedService {
 
   cleanFeed(feed) {
     let next = "";
-    const arr = Object.keys(feed)
+    const cleanFeed = Object.keys(feed)
       .filter((key, index, array) => {
-        const v = feed[key];
+        const current = feed[key];
         if (index + 1 >= array.length) {
-          return isFeedClean(feed[array[index - 1]], v);
+          return isFeedClean(feed[array[index - 1]], current);
         }
 
         const nextIndex = index + 1;
         next = feed[array[nextIndex]];
-        return isFeedClean(v, next);
+        return isFeedClean(current, next);
       })
       .map((key) => feed[key]);
-    arr.sort(compare);
-    return arr;
+    cleanFeed.sort(compare);
+    return cleanFeed;
   }
 
   mergeUpdateRecords(feed) {
@@ -92,18 +92,17 @@ class FeedService {
         record.message.includes("pages")
       );
 
-      console.log(filtered);
       let id = "";
       filtered.forEach((item) => {
         if (item.data.id !== id || id === "") {
           id = item.data.id;
-          const pages = filtered
-            .filter((item) => item.data.id === id)
-            .reduce(pageReducer, 0);
+
+          const sameIdRecords = filtered.filter((item) => item.data.id === id);
+          const pages = sameIdRecords.reduce(pageReducer, 0);
 
           const mergeIndex = this.getMergeIndex(feed[key], item.data.id);
-          const mergeCount = filtered.filter((item) => item.data.id === id)
-            .length;
+          const mergeCount = sameIdRecords.length;
+
           feed[key].splice(
             mergeIndex,
             mergeCount,
