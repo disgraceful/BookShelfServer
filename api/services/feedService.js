@@ -45,12 +45,32 @@ class FeedService {
 
     try {
       const clean = this.cleanFeed(value);
+
       const formatted = this.formatFeedByDate(clean);
       this.mergeUpdateRecords(formatted);
       return formatted;
     } catch (error) {
       console.log(error);
     }
+  }
+
+  cleanFeed(feed) {
+    let next = "";
+    const cleanFeed = Object.keys(feed)
+      .filter((key, index, array) => {
+        const current = feed[key];
+        console.log(current);
+        if (index + 1 >= array.length) {
+          return true;
+        }
+
+        const nextIndex = index + 1;
+        next = feed[array[nextIndex]];
+        return isFeedClean(current, next);
+      })
+      .map((key) => feed[key]);
+    cleanFeed.reverse();
+    return cleanFeed;
   }
 
   formatFeedByDate(feed) {
@@ -66,24 +86,6 @@ class FeedService {
     });
 
     return feedMap;
-  }
-
-  cleanFeed(feed) {
-    let next = "";
-    const cleanFeed = Object.keys(feed)
-      .filter((key, index, array) => {
-        const current = feed[key];
-        if (index + 1 >= array.length) {
-          return isFeedClean(feed[array[index - 1]], current);
-        }
-
-        const nextIndex = index + 1;
-        next = feed[array[nextIndex]];
-        return isFeedClean(current, next);
-      })
-      .map((key) => feed[key]);
-    cleanFeed.sort(compare);
-    return cleanFeed;
   }
 
   mergeUpdateRecords(feed) {
