@@ -76,7 +76,7 @@ class UserBooksService {
       const bookRef = books.find((item) => item.id === bookId);
       if (bookRef) {
         books = books.filter((item) => item.id !== bookRef.id);
-        console.log(this.feedService.generateFeed(bookRef, "not"));
+        this.feedService.saveFeed(bookRef, "not", id);
         await firebase
           .database()
           .ref("users")

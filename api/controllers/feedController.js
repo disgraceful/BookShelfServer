@@ -14,11 +14,18 @@ class FeedController {
   async getFeed(request, response) {
     console.log("Get Feed request accepted");
     const token = request.headers["x-access-token"];
+    const date = request.query.date;
     try {
       const validated = this.tokenService.validateToken(token);
       if (!validated)
         throw new ErrorWithHttpCode(400, "Error validating token");
-      const result = await this.feedService.getFeedByDate(validated.id);
+
+      let result;
+      if (!date) {
+        result = await this.feedService.getAllUserFeed(validated.id);
+      } else {
+        result = await this.feedService.getLastUserFeed(validated.id, date);
+      }
       response.json(result);
     } catch (error) {
       response
