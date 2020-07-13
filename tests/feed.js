@@ -11,5 +11,6 @@ describe("Feed Service", function () {
 
   it("invalid feed", function () {
     const feed = feedService.generateFeed(book, "asd");
+    expect(feed).to.equal(null);
   });
 });

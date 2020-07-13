@@ -16,7 +16,7 @@ const errorMsg = "Something went wrong while retrieving user feed";
 
 class FeedService {
   generateFeed(book, action, pages) {
-    if (!actions[action] || !book) {
+    if (!actions[action] || !book || book.id === "" || book.title === "") {
       return null;
     }
 
@@ -29,15 +29,25 @@ class FeedService {
 
   async saveFeed(book, action, userId, pages) {
     const feed = this.generateFeed(book, action, pages);
-    const feedRef = firebase
-      .database()
-      .ref("users")
-      .child(userId)
-      .child("feed");
-    await feedRef.push().set(feed);
+    if (feed) {
+      try {
+        const feedRef = firebase
+          .database()
+          .ref("users")
+          .child(userId)
+          .child("feed");
+        await feedRef.push().set(feed);
+      } catch (error) {
+        console.log(error);
+        throw new ErrorWithHttpCode(
+          500,
+          error.message || "Something went wrong while recording user feed"
+        );
+      }
+    }
   }
 
-  async getUserFeed(userId) {
+  async getAllUserFeed(userId) {
     try {
       const feed = await this.retrieveUserFeed(userId);
       return this.formatFeed(feed);
@@ -163,7 +173,6 @@ class FeedService {
       filtered.forEach((item) => {
         if (item.data.id !== id || id === "") {
           id = item.data.id;
-
           const sameIdRecords = filtered.filter((item) => item.data.id === id);
           const pages = sameIdRecords.reduce(pageReducer, 0);
 
