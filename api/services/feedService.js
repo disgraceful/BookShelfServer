@@ -128,7 +128,9 @@ class FeedService {
   }
 
   freshFeed(feed, daySpan) {
-    return Object.keys(feed).filter((key) => isFeedFresh(daySpan, feed[key]));
+    return Object.keys(feed).filter((key) =>
+      this.isFeedFresh(daySpan, feed[key])
+    );
   }
 
   //remove duplicates and contradicting records
@@ -143,7 +145,7 @@ class FeedService {
 
         const nextIndex = index + 1;
         next = feed[array[nextIndex]];
-        return isFeedClean(current, next);
+        return this.isFeedClean(current, next);
       })
       .map((key) => feed[key]);
     cleanFeed.sort(compare); //reverse is simple, but compare is reliable
