@@ -20,7 +20,7 @@ export default (app) => {
   app.post("/user/books/:collection", UserController.addToCollection);
   app.delete("/user/books", UserController.deleteBook);
   app.put("/user/books", UserController.updateBook);
-  app.get("/user/feed", FeedController.getFeed);
+  app.get("/user/feed", FeedController.getAllFeed);
   app.get("/series/:id", SeriesController.getSeriesById);
   app.get("/author/:id", AuthorController.getAuthorInfo);
   app.get("/author/:id/series", AuthorController.getAuthorSeries);

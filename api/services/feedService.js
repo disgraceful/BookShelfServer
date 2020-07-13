@@ -61,6 +61,9 @@ class FeedService {
   }
 
   async getLastUserFeed(userId, daySpan) {
+    if (!daySpan || daySpan < 0) {
+      throw new ErrorWithHttpCode(400, "Invalid request");
+    }
     try {
       const feed = await this.retrieveUserFeed(userId);
       const fresh = this.freshFeed(feed, daySpan);
