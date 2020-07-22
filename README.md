@@ -89,16 +89,22 @@ Get user data and stats.
 
 CRUD calls for manipulating user books collection, favorites, etc.
 
+```
+/user/feed
+```
+
+Get User Feed records
+
 ## Features
 
 - [x] Service layer for Goodreads API access
 - [x] Firebase authorization
 - [x] JWT-based API access
 - [x] Token check and refresh at expiration
+- [x] User Feed
 
 ### To-do list:
 
-- [ ] User Feed
 - [ ] Change user account settings
 - [ ] File upload to Firebase Storage
 - [ ] Email notifications via Firebase
