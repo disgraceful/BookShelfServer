@@ -48,36 +48,26 @@ class FeedService {
   }
 
   async getAllUserFeed(userId) {
-    try {
-      const feed = await this.retrieveUserFeed(userId);
-      return this.formatFeed(feed);
-    } catch (error) {
-      console.log(erorr);
-      throw new ErrorWithHttpCode(
-        eror.httpCode || 500,
-        error.message || errorMsg
-      );
-    }
+    const feed = await this.retrieveUserFeed(userId);
+    return this.formatFeed(feed);
   }
 
-  async getLastUserFeed(userId, daySpan) {
-    if (!daySpan || daySpan < 0) {
-      throw new ErrorWithHttpCode(400, "Invalid request");
+  async getUserFeedByDate(userId, date) {
+    const momentDate = moment(date, dateFormat);
+    if (!momentDate) {
+      throw new ErrorWithHttpCode(400, "Invalid date parameter");
     }
-    try {
-      const feed = await this.retrieveUserFeed(userId);
-      const fresh = this.freshFeed(feed, daySpan);
-      return this.formatFeed(fresh);
-    } catch (error) {
-      console.log(erorr);
-      throw new ErrorWithHttpCode(
-        eror.httpCode || 500,
-        error.message || errorMsg
-      );
-    }
-  }
 
-  async getUserFeedByDate(userID, date) {}
+    const feed = await this.retrieveUserFeed(userId);
+    const formatted = this.formatFeed(feed);
+
+    const key = Object.keys(formatted).find((key) => {
+      const compareDate = moment(key, dateFormat);
+      console.log(compareDate);
+      return momentDate.isSame(compareDate, "days");
+    });
+    return { [key]: formatted[key] };
+  }
 
   async retrieveUserFeed(userId) {
     try {
@@ -103,34 +93,6 @@ class FeedService {
     const formatted = this.formatFeedByDate(clean);
     this.mergeUpdateRecords(formatted);
     return formatted;
-  }
-
-  async getFeedByDate(userId) {
-    const snapshot = await firebase
-      .database()
-      .ref("users")
-      .child(userId)
-      .child("feed")
-      .once("value");
-    const value = snapshot.val();
-    if (!value) {
-      return {};
-    }
-
-    try {
-      const clean = this.cleanFeed(value);
-      const formatted = this.formatFeedByDate(clean);
-      this.mergeUpdateRecords(formatted);
-      return formatted;
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  freshFeed(feed, daySpan) {
-    return Object.keys(feed).filter((key) =>
-      this.isFeedFresh(daySpan, feed[key])
-    );
   }
 
   //remove duplicates and contradicting records
@@ -210,15 +172,6 @@ class FeedService {
       curRecord.message.includes("pages") ||
       nextRecord.message.includes("pages")
     );
-  }
-
-  //fresh feed = records in day span
-  isFeedFresh(daySpan, feedRecord) {
-    const last = moment().subtract(daySpan, "days");
-    const recordDate = moment(feedRecord.date, dateFormat);
-
-    console.log(last, recordDate);
-    return recordDate.isAfter(last);
   }
 }
 
