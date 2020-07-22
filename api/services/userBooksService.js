@@ -45,6 +45,7 @@ class UserBooksService {
     try {
       const books = await this.getUserBooks(id);
       const bookRef = books.find((item) => item.id === book.id);
+      console.log(collection);
       if (bookRef) {
         bookRef.userData.status = collection;
         this.feedService.saveFeed(bookRef, collection, id);

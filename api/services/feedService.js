@@ -28,8 +28,7 @@ class FeedService {
     };
   }
 
-  async saveFeed(book, action, userId, config) {
-    console.log(config);
+  async saveFeed(book, action, userId, config = {}) {
     const feed = this.generateFeed(book, action, config);
     if (feed) {
       try {
@@ -97,6 +96,7 @@ class FeedService {
   formatFeed(feed) {
     const clean = this.cleanFeed(feed);
     const formatted = this.formatFeedByDate(clean);
+    console.log(formatted);
     this.mergeUpdateRecords(formatted);
     return formatted;
   }
@@ -125,10 +125,10 @@ class FeedService {
 
     feed.forEach((item) => {
       if (!feedMap.hasOwnProperty(item.date)) {
-        feedMap[item.date] = [{ data: item.data, message: item.message }];
+        feedMap[item.date] = [item];
       } else {
         const curRecord = feedMap[item.date];
-        curRecord.unshift({ data: item.data, message: item.message });
+        curRecord.unshift(item);
       }
     });
 
