@@ -24,7 +24,7 @@ class FeedController {
       if (!date) {
         result = await this.feedService.getAllUserFeed(validated.id);
       } else {
-        result = await this.feedService.getLastUserFeed(validated.id, date);
+        result = await this.feedService.getUserFeedByDate(validated.id, date);
       }
       response.json(result);
     } catch (error) {
