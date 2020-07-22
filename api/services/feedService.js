@@ -7,6 +7,7 @@ const actions = {
   finished: "Finished",
   stopped: "Stopped reading",
   update: "Has read",
+  rating: "Has rated",
   reading: "Started reading",
   not: "Not reading",
 };
@@ -15,20 +16,21 @@ const dateFormat = "DD MMM YYYY";
 const errorMsg = "Something went wrong while retrieving user feed";
 
 class FeedService {
-  generateFeed(book, action, pages) {
+  generateFeed(book, action, { pages, rating }) {
     if (!actions[action] || !book || book.id === "" || book.title === "") {
       return null;
     }
 
     return {
       date: moment().format(dateFormat),
-      message: `${actions[action]} ${pages ? pages + " pages" : ""}`,
-      data: { id: book.id, title: book.title },
+      message: `${actions[action]} ${pages ? pages + " pages of" : ""}`,
+      data: { id: book.id, title: book.title, rating: rating || null },
     };
   }
 
-  async saveFeed(book, action, userId, pages) {
-    const feed = this.generateFeed(book, action, pages);
+  async saveFeed(book, action, userId, config) {
+    console.log(config);
+    const feed = this.generateFeed(book, action, config);
     if (feed) {
       try {
         const feedRef = firebase
@@ -49,6 +51,7 @@ class FeedService {
 
   async getAllUserFeed(userId) {
     const feed = await this.retrieveUserFeed(userId);
+    if (!feed) return {};
     return this.formatFeed(feed);
   }
 
@@ -59,13 +62,16 @@ class FeedService {
     }
 
     const feed = await this.retrieveUserFeed(userId);
+    if (!feed) return {};
     const formatted = this.formatFeed(feed);
 
     const key = Object.keys(formatted).find((key) => {
       const compareDate = moment(key, dateFormat);
-      console.log(compareDate);
       return momentDate.isSame(compareDate, "days");
     });
+    if (!key) {
+      return {};
+    }
     return { [key]: formatted[key] };
   }
 
@@ -79,7 +85,7 @@ class FeedService {
         .once("value");
       const value = snapshot.val();
       if (!value) {
-        return {};
+        return null;
       }
       return value;
     } catch (error) {
@@ -129,7 +135,7 @@ class FeedService {
     return feedMap;
   }
 
-  //merging multiple 'read x pages' of same book
+  //merging multiple 'read x pages' of same book (in the same record)
   mergeUpdateRecords(feed) {
     Object.keys(feed).forEach((key) => {
       const filtered = feed[key].filter((record) =>
@@ -149,7 +155,7 @@ class FeedService {
           feed[key].splice(
             mergeIndex,
             mergeCount,
-            this.generateFeed(item.data, "update", pages)
+            this.generateFeed(item.data, "update", { pages })
           );
         }
       });

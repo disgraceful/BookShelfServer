@@ -146,7 +146,12 @@ class UserBooksService {
         const index = books.indexOf(bookRef);
         const pageDiff = book.userData.pagesRead - bookRef.userData.pagesRead;
         if (pageDiff > 0) {
-          this.feedService.saveFeed(bookRef, "update", id, pageDiff);
+          this.feedService.saveFeed(bookRef, "update", id, { pages: pageDiff });
+        }
+        if (Math.abs(book.userData.rating - bookRef.userData.rating) > 0) {
+          this.feedService.saveFeed(bookRef, "rating", id, {
+            rating: book.userData.rating,
+          });
         }
         await firebase.database().ref(`users/${id}/books/${index}`).set(book);
         const snapshot = await firebase
