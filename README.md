@@ -24,6 +24,7 @@ Also I want to learn more about fullstack development, new technologies and work
 - Webpack - version 4.43
 - Axios - version 0.19
 - Mocha - version 8.0.1
+- Moment.js - version 2.24
 
 ## Setup
 
