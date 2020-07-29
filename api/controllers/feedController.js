@@ -1,25 +1,19 @@
 import FeedService from "../services/feedService";
-import TokenService from "../services/tokenService";
+import { tokenInterceptor } from "../http/interceptors";
 
 const feedService = new FeedService();
-const tokenService = new TokenService();
 
 class FeedController {
-  constructor(feedService, tokenService) {
+  constructor(feedService) {
     this.feedService = feedService;
-    this.tokenService = tokenService;
     this.getFeed = this.getFeed.bind(this);
   }
 
   async getFeed(request, response) {
     console.log("Get Feed request accepted");
-    const token = request.headers["x-access-token"];
     const date = request.query.date;
     try {
-      const validated = this.tokenService.validateToken(token);
-      if (!validated)
-        throw new ErrorWithHttpCode(400, "Error validating token");
-
+      const validated = tokenInterceptor(request);
       let result;
       if (!date) {
         result = await this.feedService.getAllUserFeed(validated.id);
@@ -35,4 +29,4 @@ class FeedController {
   }
 }
 
-export default new FeedController(feedService, tokenService);
+export default new FeedController(feedService);

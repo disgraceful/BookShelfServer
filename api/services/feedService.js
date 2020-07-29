@@ -96,7 +96,6 @@ class FeedService {
   formatFeed(feed) {
     const clean = this.cleanFeed(feed);
     const formatted = this.formatFeedByDate(clean);
-    console.log(formatted);
     this.mergeUpdateRecords(formatted);
     return formatted;
   }
