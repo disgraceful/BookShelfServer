@@ -19,16 +19,13 @@ routes(app);
 
 firebase.initializeApp(firebaseConfig);
 
-app.all("/*", function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
-  res.header("Access-Control-Allow-Headers", "x-access-token");
-  if (req.method == "OPTIONS") {
-    res.status(200).end();
-  } else {
-    next();
-  }
-});
+// DO i still need this? i use cors, but in case it fucking breaks again...
+// app.all("/*", function (req, res, next) {
+//   res.header("Access-Control-Allow-Origin", "*");
+//   res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
+//   res.header("Access-Control-Allow-Headers", "x-access-token");
+//   next();
+// });
 
 app.listen(port, () => console.log(`Started on port ${port}!`));
 
