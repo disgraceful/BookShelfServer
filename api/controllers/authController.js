@@ -10,7 +10,6 @@ class AuthController {
     this.authService = authService;
     this.signInUser = this.signInUser.bind(this);
     this.signUpUser = this.signUpUser.bind(this);
-    this.validateUser = this.validateUser.bind(this);
   }
 
   async signInUser(request, response) {
@@ -38,19 +37,6 @@ class AuthController {
         userCredentials.password
       );
       response.json(user);
-    } catch (error) {
-      response
-        .status(error.httpCode)
-        .json({ httpCode: error.httpCode, message: error.message });
-    }
-  }
-
-  async validateUser(request, response) {
-    console.log("Validate request accepted");
-    const token = request.body.token;
-    try {
-      const validated = tokenService.validateToken(token);
-      response.json({ id: validated.id, email: validated.email });
     } catch (error) {
       response
         .status(error.httpCode)
