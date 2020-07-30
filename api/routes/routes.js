@@ -6,6 +6,9 @@ import SeriesController from "../controllers/seriesController";
 import AuthorController from "../controllers/authorController";
 import FeedController from "../controllers/feedController";
 
+import multer from "multer";
+const upload = multer();
+
 export default (app) => {
   app.post("/auth/login", AuthController.signInUser);
   app.post("/auth/register", AuthController.signUpUser);
@@ -24,4 +27,9 @@ export default (app) => {
   app.get("/series/:id", SeriesController.getSeriesById);
   app.get("/author/:id", AuthorController.getAuthorInfo);
   app.get("/author/:id/series", AuthorController.getAuthorSeries);
+  app.post(
+    "/book/upload",
+    upload.single("cover"),
+    UserController.savePrivateBook
+  );
 };

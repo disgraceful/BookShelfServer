@@ -147,6 +147,17 @@ class UserController {
       response.status(error.httpCode).json(error);
     }
   }
+
+  async savePrivateBook(request, response) {
+    console.log("Save User's private book request accepted");
+    try {
+      const validated = tokenInterceptor(request);
+      console.log(request.file);
+      console.log(request.body);
+    } catch (error) {
+      response.status(error.httpCode).json(error);
+    }
+  }
 }
 
 export default new UserController(userService, userBooksService);
