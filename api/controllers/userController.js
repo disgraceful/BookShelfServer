@@ -1,18 +1,20 @@
 "use strict";
 import UserService from "../services/userService";
 import UserBooksService from "../services/userBooksService";
-import TokenService from "../services/tokenService";
 import FeedService from "../services/feedService";
+import PrivateBookService from "../services/privateBookService";
 import { tokenInterceptor } from "../http/interceptors";
 
 const userService = new UserService();
 const feedService = new FeedService();
+const privateBookService = new PrivateBookService(userService);
 const userBooksService = new UserBooksService(userService, feedService);
 
 class UserController {
-  constructor(userService, userBooksService) {
+  constructor(userService, userBooksService, privateBookService) {
     this.userService = userService;
     this.userBooksService = userBooksService;
+    this.privateBookService = privateBookService;
     this.getUser = this.getUser.bind(this);
     this.getUserBooks = this.getUserBooks.bind(this);
     this.getCollection = this.getCollection.bind(this);
@@ -22,6 +24,7 @@ class UserController {
     this.getFavoriteBooks = this.getFavoriteBooks.bind(this);
     this.updateBook = this.updateBook.bind(this);
     this.getUserGenres = this.getUserGenres.bind(this);
+    this.savePrivateBook = this.savePrivateBook.bind(this);
   }
 
   async getUser(request, response) {
@@ -152,12 +155,22 @@ class UserController {
     console.log("Save User's private book request accepted");
     try {
       const validated = tokenInterceptor(request);
-      console.log(request.file);
-      console.log(request.body);
+      const book = request.body;
+      const cover = request.file;
+      console.log(book);
+      console.log(cover);
+
+      await this.privateBookService.saveUserBook(validated.id, book);
+      response.json("nice");
     } catch (error) {
-      response.status(error.httpCode).json(error);
+      console.log(error);
+      response.status(error.httpCode || 500).json(error);
     }
   }
 }
 
-export default new UserController(userService, userBooksService);
+export default new UserController(
+  userService,
+  userBooksService,
+  privateBookService
+);
