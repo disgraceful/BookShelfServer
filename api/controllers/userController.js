@@ -160,7 +160,7 @@ class UserController {
       console.log(book);
       console.log(cover);
 
-      await this.privateBookService.saveUserBook(validated.id, book);
+      await this.privateBookService.saveUserBook(validated.id, book, cover);
       response.json("nice");
     } catch (error) {
       console.log(error);

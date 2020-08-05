@@ -8,6 +8,8 @@ import routes from "./routes/routes.js";
 import firebase from "firebase/app";
 import { firebaseConfig } from "./firebase.config";
 
+global.XMLHttpRequest = require("xhr2"); // So firebase storage has weird XMLHttpRequest is not defined error, this is a workaround
+
 const app = express();
 const port = 4200;
 

@@ -1,4 +1,5 @@
 import firebase from "firebase";
+import "firebase/storage";
 import { UserData } from "../model/UserData";
 
 class PrivateBookService {
@@ -6,7 +7,7 @@ class PrivateBookService {
     this.userService = userService;
   }
 
-  async saveUserBook(userId, book) {
+  async saveUserBook(userId, book, cover) {
     const privateBook = {
       title: book.title,
       authors: book.author,
@@ -22,14 +23,37 @@ class PrivateBookService {
       .child(userId)
       .child("books");
 
-    const newChildRef = bookRef.push();
+    const bookKey = (await bookRef.push(privateBook)).key;
 
-    await newChildRef.set(privateBook, (error) => {
-      console.log(error);
-      // TODO: Proper error handling!
-    });
+    await this.saveBookCover(userId, bookKey, cover);
+    console.log(bookKey);
+  }
 
-    console.log("key", newChildRef.key);
+  async saveBookCover(userId, bookKey, cover) {
+    const rootRef = firebase.storage().ref();
+    const fileExt = cover.originalname.slice(cover.originalname.indexOf("."));
+
+    const currentCoverRef = rootRef
+      .child(userId)
+      .child(bookKey)
+      .child(`cover${fileExt}`);
+
+    const arrayBuffer = Uint8Array.from(cover.buffer).buffer;
+    const uploadTask = currentCoverRef.put(arrayBuffer);
+
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        console.log(snapshot);
+      },
+      (error) => {},
+
+      () => {
+        uploadTask.snapshot.ref.getDownloadURL().then((url) => {
+          console.log("url", url);
+        });
+      }
+    );
   }
 }
 
