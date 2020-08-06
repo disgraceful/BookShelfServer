@@ -160,8 +160,13 @@ class UserController {
       console.log(book);
       console.log(cover);
 
-      await this.privateBookService.saveUserBook(validated.id, book, cover);
-      response.json("nice");
+      const result = await this.privateBookService.saveUserBook(
+        validated.id,
+        book,
+        cover
+      );
+
+      response.json(result);
     } catch (error) {
       console.log(error);
       response.status(error.httpCode || 500).json(error);
