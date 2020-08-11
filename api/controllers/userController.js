@@ -25,7 +25,8 @@ class UserController {
     this.updateBook = this.updateBook.bind(this);
     this.getUserGenres = this.getUserGenres.bind(this);
     this.savePrivateBook = this.savePrivateBook.bind(this);
-    this.getPrivateBooks = this.getPrivateBooks.bind(this);
+    this.getAllPrivateBooks = this.getAllPrivateBooks.bind(this);
+    this.getPrivateBookById = this.getPrivateBookById.bind(this);
   }
 
   async getUser(request, response) {
@@ -174,12 +175,28 @@ class UserController {
     }
   }
 
-  async getPrivateBooks(request, response) {
-    console.log("GET User's privatebooks request accepted");
+  async getAllPrivateBooks(request, response) {
+    console.log("GET User's private books request accepted");
     try {
       const validated = tokenInterceptor(request);
       const result = await this.privateBookService.getPrivateBooks(
         validated.id
+      );
+      response.json(result);
+    } catch (error) {
+      console.log(error);
+      response.status(error.httpCode || 500).json(error);
+    }
+  }
+
+  async getPrivateBookById(request, response) {
+    console.log("Get User's private book By Id");
+    try {
+      const validated = tokenInterceptor(request);
+      const bookFid = request.params.id;
+      const result = await this.privateBookService.getPrivateBookById(
+        validated.id,
+        bookFid
       );
       response.json(result);
     } catch (error) {

@@ -11,13 +11,36 @@ class PrivateBookService {
     return firebase.database().ref("users").child(userId).child("books");
   }
 
+  async getPrivateBookById(userId, bookFid) {
+    if (!bookFid) throw ErrorWithHttpCode(400, "Book identifier required");
+
+    const ref = this.getBookDbRef(userId);
+    const snapshot = await ref.child(bookFid).once("value");
+    const result = snapshot.val();
+    if (!result)
+      throw new ErrorWithHttpCode(404, "No book found with that identifier");
+
+    return result;
+  }
+
   async getPrivateBooks(userId) {
     const ref = this.getBookDbRef(userId);
     const snapshot = await ref.once("value");
     const books = snapshot.val();
 
     if (!books) return [];
-    return Object.values(books).filter((book) => book.private);
+
+    return (
+      Object.entries(books)
+        .filter((entry) => entry[1].private)
+        //get firebase Ids
+        .map((entry) => {
+          const bookWithId = { ...entry[1] };
+          bookWithId.fid = entry[0];
+          console.log(bookWithId);
+          return bookWithId;
+        })
+    );
   }
 
   async saveUserBook(userId, book, cover) {
