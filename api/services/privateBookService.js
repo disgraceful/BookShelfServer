@@ -1,11 +1,23 @@
 import firebase from "firebase";
 import "firebase/storage";
 import { UserData } from "../model/UserData";
-import { response } from "express";
 
 class PrivateBookService {
   constructor(userService) {
     this.userService = userService;
+  }
+
+  getBookDbRef(userId) {
+    return firebase.database().ref("users").child(userId).child("books");
+  }
+
+  async getPrivateBooks(userId) {
+    const ref = this.getBookDbRef(userId);
+    const snapshot = await ref.once("value");
+    const books = snapshot.val();
+
+    if (!books) return [];
+    return Object.values(books).filter((book) => book.private);
   }
 
   async saveUserBook(userId, book, cover) {
@@ -16,18 +28,12 @@ class PrivateBookService {
       imageUrl: "",
       description: book.description,
       userData: new UserData(),
+      private: true,
     };
 
-    const bookRef = firebase
-      .database()
-      .ref("users")
-      .child(userId)
-      .child("books");
-
-    const bookKey = (await bookRef.push(privateBook)).key;
+    const booksRef = this.getBookDbRef(userId);
+    const bookKey = (await booksRef.push(privateBook)).key;
     const url = await this.saveBookCover(userId, bookKey, cover);
-    console.log(bookKey);
-    console.log("url", url);
     const updatedBook = await this.updateImageUrl(
       userId,
       bookKey,
@@ -35,7 +41,7 @@ class PrivateBookService {
       privateBook
     );
     console.log(updatedBook);
-    // return updatedBook;
+    return updatedBook;
   }
 
   async saveBookCover(userId, bookKey, cover) {
@@ -48,41 +54,22 @@ class PrivateBookService {
       .child(`cover${fileExt}`);
 
     const arrayBuffer = Uint8Array.from(cover.buffer).buffer;
-    const metadata = {}; // Add metadata to the file!
-    const uploadTask = currentCoverRef.put(arrayBuffer);
+    const metadata = {
+      contentType: cover.mimetype,
+    };
+    await currentCoverRef.put(arrayBuffer, metadata);
 
-    //Get download url as soon as cover uploaded to firebase
-    return new Promise((resolve, reject) => {
-      uploadTask.on(
-        "state_changed",
-        () => {},
-        (error) => {
-          //TODO: proper Eror handling??
-          reject(error);
-        },
-        () => {
-          uploadTask.snapshot.ref.getDownloadURL().then((url) => {
-            resolve(url); //TODO: is this url TEMPORARY??
-          });
-        }
-      );
-    });
+    return currentCoverRef.getDownloadURL();
   }
 
   async updateImageUrl(userId, bookKey, url, book) {
-    let updatedBook = book;
+    const updatedBook = book;
     updatedBook.imageUrl = url;
-    const bookRef = firebase
-      .database()
-      .ref("users")
-      .child(userId)
-      .child("books")
-      .child(bookKey);
-    await bookRef.set(updatedBook);
+    const bookRef = this.getBookDbRef(userId).child(bookKey);
 
-    return new Promise((resolve) => {
-      bookRef.once("value", (snapshot) => resolve(snapshot.val()));
-    });
+    await bookRef.set(updatedBook);
+    const snapshot = await bookRef.once("value");
+    return snapshot.val();
   }
 }
 

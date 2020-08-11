@@ -7,7 +7,7 @@ import { tokenInterceptor } from "../http/interceptors";
 
 const userService = new UserService();
 const feedService = new FeedService();
-const privateBookService = new PrivateBookService(userService);
+const privateBookService = new PrivateBookService();
 const userBooksService = new UserBooksService(userService, feedService);
 
 class UserController {
@@ -25,6 +25,7 @@ class UserController {
     this.updateBook = this.updateBook.bind(this);
     this.getUserGenres = this.getUserGenres.bind(this);
     this.savePrivateBook = this.savePrivateBook.bind(this);
+    this.getPrivateBooks = this.getPrivateBooks.bind(this);
   }
 
   async getUser(request, response) {
@@ -119,7 +120,7 @@ class UserController {
   async getFavoriteBooks(request, response) {
     console.log("Get favorite books request accepted");
     try {
-      const validated = tokenInterceptor(token);
+      const validated = tokenInterceptor(request);
       const result = await this.userBooksService.getFavorites(validated.id);
       response.json(result);
     } catch (error) {
@@ -166,6 +167,20 @@ class UserController {
         cover
       );
 
+      response.json(result);
+    } catch (error) {
+      console.log(error);
+      response.status(error.httpCode || 500).json(error);
+    }
+  }
+
+  async getPrivateBooks(request, response) {
+    console.log("GET User's privatebooks request accepted");
+    try {
+      const validated = tokenInterceptor(request);
+      const result = await this.privateBookService.getPrivateBooks(
+        validated.id
+      );
       response.json(result);
     } catch (error) {
       console.log(error);
