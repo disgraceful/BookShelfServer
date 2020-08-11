@@ -1,12 +1,12 @@
 import firebase from "firebase";
 import "firebase/storage";
 import { UserData } from "../model/UserData";
+import { ErrorWithHttpCode } from "../error/ErrorWithHttpCode";
+
+const defaultImgUrl =
+  "https://s.gr-assets.com/assets/nophoto/book/111x148-bcc042a9c91a29c1d680899eff700a03.png";
 
 class PrivateBookService {
-  constructor(userService) {
-    this.userService = userService;
-  }
-
   getBookDbRef(userId) {
     return firebase.database().ref("users").child(userId).child("books");
   }
@@ -21,6 +21,10 @@ class PrivateBookService {
   }
 
   async saveUserBook(userId, book, cover) {
+    if (!book.title || !book.author || Number.isNaN(+book.pages)) {
+      throw new ErrorWithHttpCode(400, "Book information is invalid");
+    }
+
     const privateBook = {
       title: book.title,
       authors: book.author,
@@ -32,16 +36,26 @@ class PrivateBookService {
     };
 
     const booksRef = this.getBookDbRef(userId);
-    const bookKey = (await booksRef.push(privateBook)).key;
-    const url = await this.saveBookCover(userId, bookKey, cover);
-    const updatedBook = await this.updateImageUrl(
-      userId,
-      bookKey,
-      url,
-      privateBook
-    );
-    console.log(updatedBook);
-    return updatedBook;
+    let newBookRef;
+
+    if (!cover) {
+      privateBook.imageUrl = defaultImgUrl;
+      newBookRef = await booksRef.push(privateBook);
+      const snapshot = await booksRef.child(newBookRef.key).once("value");
+
+      return snapshot.val();
+    } else {
+      newBookRef = await booksRef.push(privateBook);
+      const url = await this.saveBookCover(userId, newBookRef.key, cover);
+      const updatedBook = await this.updateImageUrl(
+        userId,
+        newBookRef.key,
+        url,
+        privateBook
+      );
+      console.log(updatedBook);
+      return updatedBook;
+    }
   }
 
   async saveBookCover(userId, bookKey, cover) {
