@@ -10,32 +10,26 @@ class AuthService {
   }
 
   async getUser(email, password) {
-    let existingUser = {};
     try {
-      const user = await firebase
-        .auth()
-        .signInWithEmailAndPassword(email, password);
-      existingUser.email = user.user.email;
+      const userCredentials = await firebase.auth().signInWithEmailAndPassword(email, password);
+
+      //if user exists continue...
+
       const snapshot = await firebase
-        .database()
-        .ref("users")
-        .orderByChild("email")
-        .equalTo(existingUser.email)
-        .once("value");
-      if (!snapshot.val()) {
-        throw new ErrorWithHttpCode(
-          404,
-          `User data associated with user email ${email}`
-        );
+        .firestore()
+        .collection("users")
+        .where("email", "==", email)
+        .get();
+
+      if (snapshot.empty) {
+        throw new ErrorWithHttpCode(404, `User with email ${email} does not exist!`);
       }
-      let key;
-      snapshot.forEach((e) => (key = e.key));
-      const dbUser = snapshot.val()[key];
-      existingUser.id = key;
-      existingUser.books = dbUser.books || [];
-      existingUser.feed = dbUser.feed || [];
-      const token = this.tokenService.createToken({ id: key, email }, 1000000); //change expire date!
-      console.log(existingUser.id);
+
+      const doc = snapshot.docs[0];
+      const existingUser = doc.data();
+      existingUser.id = doc.id;
+
+      const token = this.tokenService.createToken({ id: doc.id, email }, 1000000); //change expire date!
       return { user: existingUser, token: token };
     } catch (error) {
       throw new ErrorWithHttpCode(error.httpCode || 500, error.message);
@@ -43,22 +37,25 @@ class AuthService {
   }
 
   async createUser(email, password) {
-    let newUser;
     try {
-      const user = await firebase
-        .auth()
-        .createUserWithEmailAndPassword(email, password);
+      let newUser;
+      const created = await firebase.auth().createUserWithEmailAndPassword(email, password);
+      //TODO: error handling.
+
+      //Do I need to define books and feed?
       newUser = {
-        email: user.user.email,
-        books: [],
-        feed: [],
+        email: created.user.email,
+        books: {},
+        feed: {},
       };
-      const data = await firebase.database().ref("users").push(newUser);
-      newUser.id = data.key;
-      const token = this.tokenService.createToken(
-        { id: data.key, email },
-        2592000
-      );
+
+      const docRef = firebase.firestore().collection("users").doc();
+      await docRef.set(newUser);
+
+      const userId = docRef.id;
+      newUser.id = userId;
+      const token = this.tokenService.createToken({ id: userId, email }, 2592000);
+
       return { user: newUser, token: token };
     } catch (error) {
       throw new ErrorWithHttpCode(error.httpCode || 500, error.message);
