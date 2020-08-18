@@ -16,15 +16,10 @@ class AuthController {
     console.log("SignIn request accepted");
     const userCredentials = request.body;
     try {
-      const user = await this.authService.getUser(
-        userCredentials.email,
-        userCredentials.password
-      );
+      const user = await this.authService.getUser(userCredentials.email, userCredentials.password);
       response.json(user);
     } catch (error) {
-      response
-        .status(error.httpCode)
-        .json({ httpCode: error.httpCode, message: error.message });
+      response.status(error.httpCode).json({ httpCode: error.httpCode, message: error.message });
     }
   }
 
@@ -38,9 +33,7 @@ class AuthController {
       );
       response.json(user);
     } catch (error) {
-      response
-        .status(error.httpCode)
-        .json({ httpCode: error.httpCode, message: error.message });
+      response.status(error.httpCode).json({ httpCode: error.httpCode, message: error.message });
     }
   }
 }
