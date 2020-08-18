@@ -36,7 +36,10 @@ class UserController {
       const user = await this.userService.getUserById(validated.id);
       response.json(user);
     } catch (error) {
-      response.status(error.httpCode).json(error);
+      console.log(error);
+      response
+        .status(error.httpCode)
+        .json({ httpCode: error.httpCode, message: error.userMessage });
     }
   }
 
@@ -57,10 +60,7 @@ class UserController {
     console.log(collection);
     try {
       const validated = tokenInterceptor(request);
-      const result = await this.userBooksService.getUserCollection(
-        validated.id,
-        collection
-      );
+      const result = await this.userBooksService.getUserCollection(validated.id, collection);
       response.json(result);
     } catch (error) {
       response.status(error.httpCode).json(error);
@@ -92,10 +92,7 @@ class UserController {
     console.log(bookId);
     try {
       const validated = tokenInterceptor(request);
-      const result = await this.userBooksService.deleteBookFromCollection(
-        validated.id,
-        bookId
-      );
+      const result = await this.userBooksService.deleteBookFromCollection(validated.id, bookId);
       response.json(result);
     } catch (error) {
       response.status(error.httpCode).json(error);
@@ -108,10 +105,7 @@ class UserController {
     console.log(book);
     try {
       const validated = tokenInterceptor(request);
-      const result = await this.userBooksService.setFavorite(
-        validated.id,
-        book
-      );
+      const result = await this.userBooksService.setFavorite(validated.id, book);
       response.json(result);
     } catch (error) {
       response.status(error.httpCode).json(error);
@@ -162,11 +156,7 @@ class UserController {
       console.log(book);
       console.log(cover);
 
-      const result = await this.privateBookService.saveUserBook(
-        validated.id,
-        book,
-        cover
-      );
+      const result = await this.privateBookService.saveUserBook(validated.id, book, cover);
 
       response.json(result);
     } catch (error) {
@@ -179,9 +169,7 @@ class UserController {
     console.log("GET User's private books request accepted");
     try {
       const validated = tokenInterceptor(request);
-      const result = await this.privateBookService.getPrivateBooks(
-        validated.id
-      );
+      const result = await this.privateBookService.getPrivateBooks(validated.id);
       response.json(result);
     } catch (error) {
       console.log(error);
@@ -194,10 +182,7 @@ class UserController {
     try {
       const validated = tokenInterceptor(request);
       const bookFid = request.params.id;
-      const result = await this.privateBookService.getPrivateBookById(
-        validated.id,
-        bookFid
-      );
+      const result = await this.privateBookService.getPrivateBookById(validated.id, bookFid);
       response.json(result);
     } catch (error) {
       console.log(error);
@@ -206,8 +191,4 @@ class UserController {
   }
 }
 
-export default new UserController(
-  userService,
-  userBooksService,
-  privateBookService
-);
+export default new UserController(userService, userBooksService, privateBookService);

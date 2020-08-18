@@ -1,6 +1,5 @@
 import AuthService from "../services/authService";
 import TokenService from "../services/tokenService";
-import { ErrorWithHttpCode } from "../error/ErrorWithHttpCode";
 
 const tokenService = new TokenService();
 const authService = new AuthService(tokenService);
@@ -19,7 +18,9 @@ class AuthController {
       const user = await this.authService.getUser(userCredentials.email, userCredentials.password);
       response.json(user);
     } catch (error) {
-      response.status(error.httpCode).json({ httpCode: error.httpCode, message: error.message });
+      response
+        .status(error.httpCode)
+        .json({ httpCode: error.httpCode, message: error.userMessage });
     }
   }
 
@@ -33,7 +34,9 @@ class AuthController {
       );
       response.json(user);
     } catch (error) {
-      response.status(error.httpCode).json({ httpCode: error.httpCode, message: error.message });
+      response
+        .status(error.httpCode)
+        .json({ httpCode: error.httpCode, message: error.userMessage });
     }
   }
 }
