@@ -21,7 +21,6 @@ class GoodreadsBaseService {
   async getValueFromGoodreads(url) {
     try {
       const response = await axios.get(url);
-      console.log("status", response.status);
       if (response.status >= 300) {
         throw new ErrorWithHttpCode(response.status, "Failed to retrieve book data");
       }
@@ -37,7 +36,7 @@ class GoodreadsBaseService {
     }
   }
 
-  async formatImageUrl(url, isbn) {
+  async getHQImage(url, isbn) {
     let imageUrl = "";
     if (url.includes("nophoto") && isbn) {
       imageUrl = `${abeBooksUrl}${isbn}.jpg`;
