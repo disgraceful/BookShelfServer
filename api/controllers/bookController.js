@@ -16,10 +16,9 @@ class BookController {
   }
 
   async searchByTitleOrAuthor(request, response) {
-    console.log("Search request accepted!");
-    const searchQuery = request.query.query;
-    console.log(searchQuery);
     try {
+      console.log("Search request accepted!");
+      const searchQuery = request.query.query;
       if (!searchQuery) throw new ErrorWithHttpCode(400, "Search query is empty");
       tokenInterceptor(request);
       const result = await this.goodreadsBookService.searchBooks(searchQuery);
