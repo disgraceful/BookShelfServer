@@ -9,8 +9,7 @@ class TokenService {
   }
 
   createToken(user, expire) {
-    if (!user || expire <= 0)
-      throw new ErrorWithHttpCode(400, "Error creating a token");
+    if (!user || expire <= 0) throw new ErrorWithHttpCode(400, "Error creating a token");
     return jwt.sign(user, process.env.JWT_KEY, { expiresIn: expire });
   }
 
@@ -23,7 +22,6 @@ class TokenService {
         }
         throw new ErrorWithHttpCode(401, "Failed to authenticate token");
       }
-      console.log("decoded", decoded);
       return decoded;
     });
   }

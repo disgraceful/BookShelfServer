@@ -1,5 +1,6 @@
 import AuthService from "../services/authService";
 import TokenService from "../services/tokenService";
+import { ErrorWithHttpCode } from "../error/ErrorWithHttpCode";
 
 const tokenService = new TokenService();
 const authService = new AuthService(tokenService);
@@ -12,9 +13,14 @@ class AuthController {
   }
 
   async signInUser(request, response) {
-    console.log("SignIn request accepted");
-    const userCredentials = request.body;
     try {
+      console.log("SignIn request accepted");
+      const userCredentials = request.body;
+
+      if (!userCredentials || !userCredentials.email || !userCredentials.password) {
+        throw new ErrorWithHttpCode(400, "User credentials are invalid");
+      }
+
       const user = await this.authService.getUser(userCredentials.email, userCredentials.password);
       response.json(user);
     } catch (error) {
@@ -25,9 +31,14 @@ class AuthController {
   }
 
   async signUpUser(request, response) {
-    console.log("SignUp request accepted");
-    const userCredentials = request.body;
     try {
+      console.log("SignUp request accepted");
+      const userCredentials = request.body;
+
+      if (!userCredentials || !userCredentials.email || !userCredentials.password) {
+        throw new ErrorWithHttpCode(400, "User credentials are invalid");
+      }
+
       const user = await this.authService.createUser(
         userCredentials.email,
         userCredentials.password
