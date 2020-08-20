@@ -152,8 +152,8 @@ class UserController {
   }
 
   async getUserGenres(request, response) {
-    console.log("GET User Genres request accepted");
     try {
+      console.log("GET User Genres request accepted");
       const validated = tokenInterceptor(request);
       const result = await this.userBooksService.getUserGenres(validated.id);
       response.json(result);

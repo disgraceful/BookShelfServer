@@ -120,8 +120,14 @@ class UserBooksService {
 
   async getFavorites(userId) {
     try {
-      const books = await this.getUserBooksAsArray(userId);
-      return books.filter((book) => book.userData.isFavorited);
+      const snapshot = await this.getUserBooksAsFBCollection(userId)
+        .where("userData.isFavorited", "==", true)
+        .get();
+
+      if (snapshot.empty) {
+        return [];
+      }
+      return snapshot.docs.map((doc) => doc.data());
     } catch (error) {
       if (error.userMessage) throw error;
       throw new ErrorWithHttpCode(500, "Something went wrong while retrieving user books!");
@@ -159,9 +165,9 @@ class UserBooksService {
     }
   }
 
-  async getUserGenres(id) {
+  async getUserGenres(userId) {
     try {
-      const books = await this.getUserBooks(id);
+      const books = await this.getUserBooksAsArray(userId);
       let genreMap = {};
       books.forEach((book) => {
         book.genres.slice(0, 2).forEach((genre) => {
@@ -174,11 +180,8 @@ class UserBooksService {
       });
       return genreMap;
     } catch (error) {
-      console.log(error);
-      throw new ErrorWithHttpCode(
-        error.httpCode || 500,
-        error.message || "Ooops! Something went wrong on the server!"
-      );
+      if (error.userMessage) throw error;
+      throw new ErrorWithHttpCode(500, "Ooops! Something went wrong while retrieving user genres");
     }
   }
 }
