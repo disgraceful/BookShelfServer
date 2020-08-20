@@ -34,7 +34,7 @@ class BookController {
     try {
       console.log("Get Book By Id request accepted");
       const bookId = request.params.bookId;
-      if (!bookId) throw new ErrorWithHttpCode(400, "Book identifier is invalid");
+      if (!bookId || isNaN(bookId)) throw new ErrorWithHttpCode(400, "Book identifier is invalid");
       const validated = tokenInterceptor(request);
       const result = await this.goodreadsBookService.getBookWithUserData(bookId, validated.id);
       response.json(result);

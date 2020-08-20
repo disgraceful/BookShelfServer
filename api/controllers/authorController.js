@@ -19,12 +19,15 @@ class AuthorController {
     try {
       console.log("Get Author request accepted!");
       const authorId = request.params.id;
-      if (!authorId) throw new ErrorWithHttpCode(400, "Request param is not valid");
+      if (!authorId || isNaN(authorId))
+        throw new ErrorWithHttpCode(400, "Request param is not valid");
       tokenInterceptor(request);
       const result = await this.goodreadsAuthorService.getAuthorByGoodreadsId(authorId);
       response.json(result);
     } catch (error) {
-      response.status(error.httpCode).json({ httpCode: error.httpCode, message: error.message });
+      response
+        .status(error.httpCode)
+        .json({ httpCode: error.httpCode, message: error.userMessage });
     }
   }
 
@@ -37,7 +40,9 @@ class AuthorController {
       const result = await this.goodreadsAuthorService.getAuthorSeries(authorId);
       response.json(result);
     } catch (error) {
-      response.status(error.httpCode).json({ httpCode: error.httpCode, message: error.message });
+      response
+        .status(error.httpCode)
+        .json({ httpCode: error.httpCode, message: error.userMessage });
     }
   }
 }

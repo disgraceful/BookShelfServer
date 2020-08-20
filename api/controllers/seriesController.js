@@ -16,12 +16,14 @@ class SeriesController {
     try {
       console.log("Get Series By Id request accepted!");
       const seriesId = request.params.id;
-      if (!seriesId) throw new ErrorWithHttpCode(400, "Series id is empty");
+      if (!seriesId || isNaN(seriesId)) throw new ErrorWithHttpCode(400, "Series id is empty");
       tokenInterceptor(request);
       const result = await this.goodreadsSeriesService.getSeriesByGoodreadsId(seriesId);
       response.json(result);
     } catch (error) {
-      response.status(error.httpCode).json({ httpCode: error.httpCode, message: error.message });
+      response
+        .status(error.httpCode)
+        .json({ httpCode: error.httpCode, message: error.userMessage });
     }
   }
 }
