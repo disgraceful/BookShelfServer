@@ -57,10 +57,11 @@ class UserController {
   }
 
   async getCollection(request, response) {
-    const collection = request.params.collection;
-    console.log(`Get Books from ${collection} request accepted`);
-    console.log(collection);
     try {
+      const collection = request.params.collection;
+      console.log(`Get Books from ${collection} request accepted`);
+      if (!collection) throw new ErrorWithHttpCode(400, "Book status is invalid");
+
       const validated = tokenInterceptor(request);
       const result = await this.userBooksService.getUserCollection(validated.id, collection);
       response.json(result);
@@ -76,6 +77,7 @@ class UserController {
       const collection = request.params.collection;
       console.log(`Get Books from ${collection} request accepted`);
       const book = request.body.book;
+
       if (!book || !collection) throw new ErrorWithHttpCode(400, "Params are invalid");
       const validated = tokenInterceptor(request);
       const result = await this.userBooksService.addToUserCollection(
@@ -92,47 +94,55 @@ class UserController {
   }
 
   async deleteBook(request, response) {
-    console.log("Book Delete Request accepted");
-    const bookId = request.query.bookId;
-    console.log(bookId);
     try {
+      console.log("Book Delete Request accepted");
+      const bookId = request.query.bookId;
+      if (!bookId || isNaN(bookId)) throw new ErrorWithHttpCode(400, "Book params are invalid");
+
       const validated = tokenInterceptor(request);
       const result = await this.userBooksService.deleteBookFromCollection(validated.id, bookId);
       response.json(result);
     } catch (error) {
-      response.status(error.httpCode).json(error);
+      response
+        .status(error.httpCode)
+        .json({ httpCode: error.httpCode, message: error.userMessage });
     }
   }
 
   async setFavorite(request, response) {
-    console.log("Favorite book request accepted");
-    const book = request.body.book;
-    console.log(book);
     try {
+      console.log("Favorite book request accepted");
+      const book = request.body.book;
+      if (!book) throw new ErrorWithHttpCode(400, "Invalid parameter");
+
       const validated = tokenInterceptor(request);
       const result = await this.userBooksService.setFavorite(validated.id, book);
       response.json(result);
     } catch (error) {
-      response.status(error.httpCode).json(error);
+      response
+        .status(error.httpCode)
+        .json({ httpCode: error.httpCode, message: error.userMessage });
     }
   }
 
   async getFavoriteBooks(request, response) {
-    console.log("Get favorite books request accepted");
     try {
+      console.log("Get favorite books request accepted");
       const validated = tokenInterceptor(request);
       const result = await this.userBooksService.getFavorites(validated.id);
       response.json(result);
     } catch (error) {
-      response.status(error.httpCode).json(error);
+      response
+        .status(error.httpCode)
+        .json({ httpCode: error.httpCode, message: error.userMessage });
     }
   }
 
   async updateBook(request, response) {
-    console.log("Update Book request accepted");
-    const book = request.body.book;
-    console.log(book);
     try {
+      console.log("Update Book request accepted");
+      const book = request.body.book;
+      if (!book) throw new ErrorWithHttpCode(400, "Invalid parameter");
       const validated = tokenInterceptor(request);
       const result = await this.userBooksService.updateBook(validated.id, book);
       response.json(result);

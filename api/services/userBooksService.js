@@ -2,6 +2,8 @@ import firebase from "firebase";
 import { ErrorWithHttpCode } from "../error/ErrorWithHttpCode";
 import { UserData } from "../model/UserData";
 
+const avaliableBookStatus = ["finished", "stopped", "2read", "reading", "not reading"];
+
 class UserBooksService {
   constructor(feedService) {
     this.feedService = feedService;
@@ -26,6 +28,9 @@ class UserBooksService {
 
   async getUserCollection(userId, collection) {
     try {
+      if (!avaliableBookStatus.includes(collection.toLowerCase())) {
+        throw new ErrorWithHttpCode(400, "Book status is invalid");
+      }
       const userBooksCollection = this.getUserBooksAsFBCollection(userId);
       const snapshot = await userBooksCollection.where("userData.status", "==", collection).get();
       if (snapshot.empty) return [];
@@ -33,12 +38,17 @@ class UserBooksService {
         return snapshot.docs.map((doc) => doc.data());
       }
     } catch (error) {
-      throw new ErrorWithHttpCode(500, "Ooops! Something went wrong on the server!");
+      if (error.userMessage) throw error;
+      throw new ErrorWithHttpCode(500, "Ooops! Something went wrong while retrieving user books");
     }
   }
 
+  //TODO: add User FEED
   async addToUserCollection(userId, collection, book) {
     try {
+      if (!avaliableBookStatus.includes(collection.toLowerCase())) {
+        throw new ErrorWithHttpCode(400, "Book status is invalid");
+      }
       // Determine if book IS in collection.
       const userBooksCollection = this.getUserBooksAsFBCollection(userId);
       const snapshot = await userBooksCollection.where("id", "==", book.id).get();
@@ -62,107 +72,91 @@ class UserBooksService {
     }
   }
 
-  async deleteBookFromCollection(id, bookId) {
+  //TODO: Add user Feed
+  async deleteBookFromCollection(userId, bookId) {
     try {
-      let books = await this.getUserBooks(id);
-      const bookRef = books.find((item) => item.id === bookId);
-      if (bookRef) {
-        books = books.filter((item) => item.id !== bookRef.id);
-        this.feedService.saveFeed(bookRef, "not", id);
-        await firebase
-          .database()
-          .ref("users")
-          .child(id)
-          .update({ books: books }, (error) => {
-            if (error) throw new ErrorWithHttpCode(400, error.message);
-          });
-        bookRef.userData = new UserData();
-        return bookRef;
+      const snapshot = await this.getUserBooksAsFBCollection(userId)
+        .where("id", "==", bookId)
+        .get();
+
+      if (!snapshot.empty) {
+        const doc = snapshot.docs[0];
+        const id = doc.id;
+        this.getUserBooksAsFBCollection(userId).doc(id).delete();
+        const deleted = doc.data();
+        deleted.userData = new UserData();
+        return deleted;
+      }
+      return false;
+
+      // this.feedService.saveFeed(bookRef, "not", id);
+    } catch (error) {
+      if (error.userMessage) throw error;
+      throw new ErrorWithHttpCode(500, "Something went wrong while deleting book!");
+    }
+  }
+
+  async setFavorite(userId, book) {
+    try {
+      const userBooksCollection = this.getUserBooksAsFBCollection(userId);
+      const snapshot = await userBooksCollection.where("id", "==", book.id).get();
+
+      book.userData.isFavorited = !book.userData.isFavorited;
+      if (snapshot.empty) {
+        await userBooksCollection.doc().set(book);
       } else {
-        return false;
+        const doc = snapshot.docs[0];
+        const id = doc.id;
+        await userBooksCollection
+          .doc(id)
+          .update({ "userData.isFavorited": book.userData.isFavorited });
       }
-    } catch (error) {
-      console.log(error);
-      throw new ErrorWithHttpCode(
-        error.httpCode || 500,
-        error.message || "Ooops! Something went wrong on the server!"
-      );
-    }
-  }
-
-  async setFavorite(id, book) {
-    try {
-      const books = await this.getUserBooks(id);
-      const bookRef = books.find((item) => item.id === book.id);
-      console.log(bookRef);
-      if (bookRef) {
-        bookRef.userData.isFavorited = !book.userData.isFavorited;
-      } else {
-        book.userData.isFavorited = !book.userData.isFavorited;
-        books.push(book);
-      }
-      await firebase
-        .database()
-        .ref("users")
-        .child(id)
-        .update({ books: books }, (error) => {
-          if (error) throw new ErrorWithHttpCode(400, error.message);
-        });
-      return books.find((item) => item.id === book.id);
-    } catch (error) {
-      console.log(error);
-      throw new ErrorWithHttpCode(
-        error.httpCode || 500,
-        error.message || "Ooops! Something went wrong on the server!"
-      );
-    }
-  }
-
-  async getFavorites(id) {
-    try {
-      const books = await this.getUserBooks(id);
-      return books.filter((item) => item.isFavorited);
-    } catch (error) {
-      throw new ErrorWithHttpCode(
-        error.httpCode || 500,
-        error.message || "Ooops! Something went wrong on the server!"
-      );
-    }
-  }
-
-  async updateBook(id, book) {
-    try {
-      const books = await this.getUserBooks(id);
-      const bookRef = books.find((item) => item.id === book.id);
-      if (bookRef) {
-        const index = books.indexOf(bookRef);
-        const pageDiff = book.userData.pagesRead - bookRef.userData.pagesRead;
-        if (pageDiff > 0) {
-          this.feedService.saveFeed(bookRef, "update", id, { pages: pageDiff });
-        }
-        if (Math.abs(book.userData.rating - bookRef.userData.rating) > 0) {
-          this.feedService.saveFeed(bookRef, "rating", id, {
-            rating: book.userData.rating,
-          });
-        }
-        await firebase.database().ref(`users/${id}/books/${index}`).set(book);
-        const snapshot = await firebase.database().ref(`users/${id}/books/${index}`).once("value");
-        return snapshot.val();
-      }
-
       return book;
     } catch (error) {
-      console.log(error);
-      throw new ErrorWithHttpCode(
-        error.httpCode || 500,
-        error.message || "Ooops! Something went wrong on the server!"
-      );
+      if (error.userMessage) throw error;
+      throw new ErrorWithHttpCode(500, "Something went wrong while updating book!");
     }
   }
 
-  finishBook(book) {
-    book.status = "finished";
-    book.pagesRead = book.pages;
+  async getFavorites(userId) {
+    try {
+      const books = await this.getUserBooksAsArray(userId);
+      return books.filter((book) => book.userData.isFavorited);
+    } catch (error) {
+      if (error.userMessage) throw error;
+      throw new ErrorWithHttpCode(500, "Something went wrong while retrieving user books!");
+    }
+  }
+
+  //TODO: Add User Feed
+  async updateBook(userId, book) {
+    try {
+      const userBooksCollection = this.getUserBooksAsFBCollection(userId);
+      const snapshot = await userBooksCollection.where("id", "==", book.id).get();
+
+      if (snapshot.empty) {
+        throw new ErrorWithHttpCode(404, "Book not found");
+      } else {
+        const doc = snapshot.docs[0];
+        const id = doc.id;
+        userBooksCollection.doc(id).update({ userData: book.userData });
+      }
+      return book;
+
+      //USER FEED CODE
+      // const pageDiff = book.userData.pagesRead - bookRef.userData.pagesRead;
+      // if (pageDiff > 0) {
+      //   this.feedService.saveFeed(bookRef, "update", id, { pages: pageDiff });
+      // }
+      // if (Math.abs(book.userData.rating - bookRef.userData.rating) > 0) {
+      //   this.feedService.saveFeed(bookRef, "rating", id, {
+      //     rating: book.userData.rating,
+      //   });
+      // }
+    } catch (error) {
+      if (error.userMessage) throw error;
+      throw new ErrorWithHttpCode(500, "Ooops! Something went wrong while updating book");
+    }
   }
 
   async getUserGenres(id) {
