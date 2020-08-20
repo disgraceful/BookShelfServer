@@ -4,11 +4,12 @@ import UserBooksService from "../services/userBooksService";
 import FeedService from "../services/feedService";
 import PrivateBookService from "../services/privateBookService";
 import { tokenInterceptor } from "../http/interceptors";
+import { ErrorWithHttpCode } from "../error/ErrorWithHttpCode";
 
 const userService = new UserService();
 const feedService = new FeedService();
 const privateBookService = new PrivateBookService();
-const userBooksService = new UserBooksService(userService, feedService);
+const userBooksService = new UserBooksService(feedService);
 
 class UserController {
   constructor(userService, userBooksService, privateBookService) {
@@ -30,13 +31,12 @@ class UserController {
   }
 
   async getUser(request, response) {
-    console.log("Get User request accepted");
     try {
+      console.log("Get User request accepted");
       const validated = tokenInterceptor(request);
       const user = await this.userService.getUserById(validated.id);
       response.json(user);
     } catch (error) {
-      console.log(error);
       response
         .status(error.httpCode)
         .json({ httpCode: error.httpCode, message: error.userMessage });
@@ -44,13 +44,15 @@ class UserController {
   }
 
   async getUserBooks(request, response) {
-    console.log(`Get User Books request accepted`);
     try {
+      console.log(`Get User Books request accepted`);
       const validated = tokenInterceptor(request);
-      const result = await this.userBooksService.getUserBooks(validated.id);
+      const result = await this.userBooksService.getUserBooksAsArray(validated.id);
       response.json(result);
     } catch (error) {
-      response.status(error.httpCode).json(error);
+      response
+        .status(error.httpCode)
+        .json({ httpCode: error.httpCode, message: error.userMessage });
     }
   }
 
@@ -63,16 +65,18 @@ class UserController {
       const result = await this.userBooksService.getUserCollection(validated.id, collection);
       response.json(result);
     } catch (error) {
-      response.status(error.httpCode).json(error);
+      response
+        .status(error.httpCode)
+        .json({ httpCode: error.httpCode, message: error.userMessage });
     }
   }
 
   async addToCollection(request, response) {
-    const collection = request.params.collection;
-    console.log(`Get Books from ${collection} request accepted`);
-    const book = request.body.book;
-    console.log(collection, book);
     try {
+      const collection = request.params.collection;
+      console.log(`Get Books from ${collection} request accepted`);
+      const book = request.body.book;
+      if (!book || !collection) throw new ErrorWithHttpCode(400, "Params are invalid");
       const validated = tokenInterceptor(request);
       const result = await this.userBooksService.addToUserCollection(
         validated.id,
@@ -81,8 +85,9 @@ class UserController {
       );
       response.json(result);
     } catch (error) {
-      console.log("error ", error);
-      response.status(error.httpCode).json(error);
+      response
+        .status(error.httpCode)
+        .json({ httpCode: error.httpCode, message: error.userMessage });
     }
   }
 

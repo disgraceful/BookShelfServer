@@ -18,20 +18,16 @@ export default (app) => {
   app.get("/user/books", UserController.getUserBooks);
   app.get("/user/books/favorite", UserController.getFavoriteBooks);
   app.post("/user/books/favorite", UserController.setFavorite);
-  app.get("/user/genres", UserController.getUserGenres);
   app.get("/user/books/:collection", UserController.getCollection);
   app.post("/user/books/:collection", UserController.addToCollection);
   app.delete("/user/books", UserController.deleteBook);
   app.put("/user/books", UserController.updateBook);
+  app.get("/user/genres", UserController.getUserGenres);
   app.get("/user/feed", FeedController.getFeed);
   app.get("/series/:id", SeriesController.getSeriesById);
   app.get("/author/:id", AuthorController.getAuthorInfo);
   app.get("/author/:id/series", AuthorController.getAuthorSeries);
   app.get("/user/upload", UserController.getAllPrivateBooks);
   app.get("/user/upload/:id", UserController.getPrivateBookById);
-  app.post(
-    "/user/upload",
-    upload.single("cover"),
-    UserController.savePrivateBook
-  );
+  app.post("/user/upload", upload.single("cover"), UserController.savePrivateBook);
 };
