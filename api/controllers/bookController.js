@@ -1,12 +1,10 @@
 import GoodreadsBookService from "../services/goodreads/goodreadsBookService";
-import UserService from "../services/userService";
 import FormatBookService from "../services/formatting/formatBookService";
 import { ErrorWithHttpCode } from "../error/ErrorWithHttpCode";
 import { tokenInterceptor } from "../http/interceptors";
 
 const formatBookService = new FormatBookService();
-const userService = new UserService();
-const goodreadsBookService = new GoodreadsBookService(userService, formatBookService);
+const goodreadsBookService = new GoodreadsBookService(formatBookService);
 
 class BookController {
   constructor(goodreadsBookService) {

@@ -1,10 +1,10 @@
 import GoodreadsBaseService from "./goodreadsBaseService";
 import { ErrorWithHttpCode } from "../../error/ErrorWithHttpCode";
+import firebase from "firebase";
 
 class GoodreadsBookService extends GoodreadsBaseService {
-  constructor(userService, formatBookService) {
+  constructor(formatBookService) {
     super();
-    this.userService = userService;
     this.formatBookService = formatBookService;
   }
 
@@ -51,12 +51,18 @@ class GoodreadsBookService extends GoodreadsBaseService {
 
   async fetchUserBookData(userId, book) {
     try {
-      const user = await this.userService.getUserById(userId); //Hmm. How can i make it better?
-      if (user.books) {
-        const userBookRecord = user.books.find((item) => item.id === book.id);
-        return userBookRecord ? userBookRecord : book;
+      const snapshot = await firebase
+        .firestore()
+        .collection("users")
+        .doc(userId)
+        .collection("books")
+        .where("id", "==", book.id)
+        .get();
+
+      if (snapshot.empty) return book;
+      else {
+        return snapshot.docs[0].data();
       }
-      return book;
     } catch (error) {
       if (error.userMessage) throw error;
       throw new ErrorWithHttpCode(error.httpCode || 500, error.message);
