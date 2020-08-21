@@ -43,7 +43,6 @@ class UserBooksService {
     }
   }
 
-  //TODO: add User FEED
   async addToUserCollection(userId, collection, book) {
     try {
       if (!avaliableBookStatus.includes(collection.toLowerCase())) {
@@ -65,6 +64,7 @@ class UserBooksService {
           "userData.status": collection,
         });
       }
+      await this.feedService.saveFeed(book, collection, userId);
       return book;
     } catch (error) {
       if (error.userMessage) throw error;
@@ -72,7 +72,6 @@ class UserBooksService {
     }
   }
 
-  //TODO: Add user Feed
   async deleteBookFromCollection(userId, bookId) {
     try {
       const snapshot = await this.getUserBooksAsFBCollection(userId)
@@ -85,11 +84,11 @@ class UserBooksService {
         this.getUserBooksAsFBCollection(userId).doc(id).delete();
         const deleted = doc.data();
         deleted.userData = new UserData();
+
+        await this.feedService.saveFeed(deleted, "not", userId);
         return deleted;
       }
       return false;
-
-      // this.feedService.saveFeed(bookRef, "not", id);
     } catch (error) {
       if (error.userMessage) throw error;
       throw new ErrorWithHttpCode(500, "Something went wrong while deleting book!");
@@ -145,20 +144,22 @@ class UserBooksService {
       } else {
         const doc = snapshot.docs[0];
         const id = doc.id;
-        userBooksCollection.doc(id).update({ userData: book.userData });
-      }
-      return book;
+        const oldBook = doc.data();
+        const pageDiff = book.userData.pagesRead - oldBook.userData.pagesRead;
+        console.log("pageDiff", pageDiff);
+        if (pageDiff > 0) {
+          await this.feedService.saveFeed(book, "update", userId, { pages: pageDiff });
+        }
+        if (Math.abs(book.userData.rating - oldBook.userData.rating) > 0) {
+          await this.feedService.saveFeed(book, "rating", userId, {
+            rating: book.userData.rating,
+          });
+        }
 
-      //USER FEED CODE
-      // const pageDiff = book.userData.pagesRead - bookRef.userData.pagesRead;
-      // if (pageDiff > 0) {
-      //   this.feedService.saveFeed(bookRef, "update", id, { pages: pageDiff });
-      // }
-      // if (Math.abs(book.userData.rating - bookRef.userData.rating) > 0) {
-      //   this.feedService.saveFeed(bookRef, "rating", id, {
-      //     rating: book.userData.rating,
-      //   });
-      // }
+        await userBooksCollection.doc(id).update({ userData: book.userData });
+      }
+
+      return book;
     } catch (error) {
       if (error.userMessage) throw error;
       throw new ErrorWithHttpCode(500, "Ooops! Something went wrong while updating book");
