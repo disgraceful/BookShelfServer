@@ -23,7 +23,7 @@ class FeedService {
 
     return {
       date: moment().format(dateFormat),
-      message: `${actions[action]} ${pages ? pages + " pages of" : ""}`,
+      message: `${actions[action]} ${pages ? pages + " pages of " : ""}`,
       data: { id: book.id, title: book.title, rating: rating || null },
     };
   }
@@ -32,20 +32,19 @@ class FeedService {
     const feed = this.generateFeed(book, action, config);
     if (feed) {
       try {
-        const feedRef = firebase
-          .database()
-          .ref("users")
-          .child(userId)
-          .child("feed");
-        await feedRef.push().set(feed);
+        const userFeedCollection = this.getUserFeedAsFBCollection(userId);
+        await userFeedCollection
+          .doc()
+          .set({ ...feed, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
       } catch (error) {
-        console.log(error);
-        throw new ErrorWithHttpCode(
-          500,
-          error.message || "Something went wrong while recording user feed"
-        );
+        if (error.userMessage) throw error;
+        throw new ErrorWithHttpCode(500, "Something went wrong while recording user feed");
       }
     }
+  }
+
+  getUserFeedAsFBCollection(userId) {
+    return firebase.firestore().collection("users").doc(userId).collection("feed");
   }
 
   async getAllUserFeed(userId) {
@@ -76,20 +75,16 @@ class FeedService {
 
   async retrieveUserFeed(userId) {
     try {
-      const snapshot = await firebase
-        .database()
-        .ref("users")
-        .child(userId)
-        .child("feed")
-        .once("value");
-      const value = snapshot.val();
-      if (!value) {
+      const userFeedCollection = this.getUserFeedAsFBCollection(userId);
+      const snapshot = await userFeedCollection.orderBy("timestamp", "desc").get();
+
+      if (snapshot.empty) {
         return null;
+      } else {
+        return snapshot.docs.map((doc) => doc.data());
       }
-      return value;
     } catch (error) {
-      console.log(error);
-      throw new ErrorWithHttpCode(500, error.message || errorMsg);
+      throw new ErrorWithHttpCode(500, errorMsg);
     }
   }
 
@@ -102,19 +97,21 @@ class FeedService {
 
   //remove duplicates and contradicting records
   cleanFeed(feed) {
-    let next = "";
-    const cleanFeed = Object.keys(feed)
-      .filter((key, index, array) => {
-        const current = feed[key];
-        if (index + 1 >= array.length) {
-          return true;
-        }
+    const recordMap = new Map();
 
-        const nextIndex = index + 1;
-        next = feed[array[nextIndex]];
-        return this.isFeedClean(current, next);
-      })
-      .map((key) => feed[key]);
+    const cleanFeed = feed.filter((value) => {
+      if (value.message.includes("pages")) {
+        return true;
+      }
+
+      if (recordMap.has(value.data.id)) {
+        return false;
+      } else {
+        recordMap.set(value.data.id, value);
+        return true;
+      }
+    });
+
     cleanFeed.sort(compare); //reverse is simple, but compare is reliable
     return cleanFeed;
   }
@@ -137,9 +134,7 @@ class FeedService {
   //merging multiple 'read x pages' of same book (in the same record)
   mergeUpdateRecords(feed) {
     Object.keys(feed).forEach((key) => {
-      const filtered = feed[key].filter((record) =>
-        record.message.includes("pages")
-      );
+      const filtered = feed[key].filter((record) => record.message.includes("pages"));
 
       let id = "";
       filtered.forEach((item) => {

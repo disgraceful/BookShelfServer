@@ -1,16 +1,10 @@
 import GoodreadsBookService from "../services/goodreads/goodreadsBookService";
-import { ErrorWithHttpCode } from "../error/ErrorWithHttpCode";
-import UserService from "../services/userService";
-import TokenService from "../services/tokenService";
 import FormatBookService from "../services/formatting/formatBookService";
+import { ErrorWithHttpCode } from "../error/ErrorWithHttpCode";
 import { tokenInterceptor } from "../http/interceptors";
 
 const formatBookService = new FormatBookService();
-const userService = new UserService();
-const goodreadsBookService = new GoodreadsBookService(
-  userService,
-  formatBookService
-);
+const goodreadsBookService = new GoodreadsBookService(formatBookService);
 
 class BookController {
   constructor(goodreadsBookService) {
@@ -20,38 +14,32 @@ class BookController {
   }
 
   async searchByTitleOrAuthor(request, response) {
-    console.log("Search request accepted!");
-    const searchQuery = request.query.query;
-    console.log(searchQuery);
     try {
-      if (!searchQuery)
-        throw new ErrorWithHttpCode(400, "Search query is empty");
+      console.log("Search request accepted!");
+      const searchQuery = request.query.query;
+      if (!searchQuery) throw new ErrorWithHttpCode(400, "Search query is empty");
       tokenInterceptor(request);
       const result = await this.goodreadsBookService.searchBooks(searchQuery);
       response.json(result);
     } catch (error) {
       response
         .status(error.httpCode)
-        .json({ httpCode: error.httpCode, message: error.message });
+        .json({ httpCode: error.httpCode, message: error.userMessage });
     }
   }
 
   async getBookById(request, response) {
-    console.log("Get Book By Id request accepted");
-    const bookId = request.params.bookId;
-    console.log(bookId);
     try {
-      if (!bookId) throw new ErrorWithHttpCode(400, "Id is empty");
+      console.log("Get Book By Id request accepted");
+      const bookId = request.params.bookId;
+      if (!bookId || isNaN(bookId)) throw new ErrorWithHttpCode(400, "Book identifier is invalid");
       const validated = tokenInterceptor(request);
-      const result = await this.goodreadsBookService.getBookWithUserData(
-        bookId,
-        validated.id
-      );
+      const result = await this.goodreadsBookService.getBookWithUserData(bookId, validated.id);
       response.json(result);
     } catch (error) {
       response
         .status(error.httpCode)
-        .json({ httpCode: error.httpCode, message: error.message });
+        .json({ httpCode: error.httpCode, message: error.userMessage });
     }
   }
 }

@@ -1,6 +1,7 @@
 export class ErrorWithHttpCode extends Error {
-    constructor(httpCode, ...params) {
-        super(...params);
-        this.httpCode = httpCode;
-    }
+  constructor(httpCode, message, ...params) {
+    super(...params);
+    this.httpCode = httpCode;
+    this.userMessage = message;
+  }
 }

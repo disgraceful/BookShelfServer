@@ -13,25 +13,32 @@ class AuthController {
   }
 
   async signInUser(request, response) {
-    console.log("SignIn request accepted");
-    const userCredentials = request.body;
     try {
-      const user = await this.authService.getUser(
-        userCredentials.email,
-        userCredentials.password
-      );
+      console.log("SignIn request accepted");
+      const userCredentials = request.body;
+
+      if (!userCredentials || !userCredentials.email || !userCredentials.password) {
+        throw new ErrorWithHttpCode(400, "User credentials are invalid");
+      }
+
+      const user = await this.authService.getUser(userCredentials.email, userCredentials.password);
       response.json(user);
     } catch (error) {
       response
         .status(error.httpCode)
-        .json({ httpCode: error.httpCode, message: error.message });
+        .json({ httpCode: error.httpCode, message: error.userMessage });
     }
   }
 
   async signUpUser(request, response) {
-    console.log("SignUp request accepted");
-    const userCredentials = request.body;
     try {
+      console.log("SignUp request accepted");
+      const userCredentials = request.body;
+
+      if (!userCredentials || !userCredentials.email || !userCredentials.password) {
+        throw new ErrorWithHttpCode(400, "User credentials are invalid");
+      }
+
       const user = await this.authService.createUser(
         userCredentials.email,
         userCredentials.password
@@ -40,7 +47,7 @@ class AuthController {
     } catch (error) {
       response
         .status(error.httpCode)
-        .json({ httpCode: error.httpCode, message: error.message });
+        .json({ httpCode: error.httpCode, message: error.userMessage });
     }
   }
 }

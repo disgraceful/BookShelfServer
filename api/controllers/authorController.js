@@ -6,10 +6,7 @@ import { tokenInterceptor } from "../http/interceptors";
 
 const formatAuthorService = new FormatAuthorService();
 const formatSeriesService = new FormatSeriesService();
-const goodreadsAuthorService = new GoodreadsAuhtorService(
-  formatAuthorService,
-  formatSeriesService
-);
+const goodreadsAuthorService = new GoodreadsAuhtorService(formatAuthorService, formatSeriesService);
 
 class AuthorController {
   constructor(goodreadsAuthorService) {
@@ -19,40 +16,33 @@ class AuthorController {
   }
 
   async getAuthorInfo(request, response) {
-    console.log("Get Author request accepted!");
-    const authorId = request.params.id;
-    console.log(authorId);
     try {
-      if (!authorId)
+      console.log("Get Author request accepted!");
+      const authorId = request.params.id;
+      if (!authorId || isNaN(authorId))
         throw new ErrorWithHttpCode(400, "Request param is not valid");
       tokenInterceptor(request);
-      const result = await this.goodreadsAuthorService.getAuthorByGoodreadsId(
-        authorId
-      );
+      const result = await this.goodreadsAuthorService.getAuthorByGoodreadsId(authorId);
       response.json(result);
     } catch (error) {
       response
         .status(error.httpCode)
-        .json({ httpCode: error.httpCode, message: error.message });
+        .json({ httpCode: error.httpCode, message: error.userMessage });
     }
   }
 
   async getAuthorSeries(request, response) {
-    console.log("Get Author's Series request accepted");
-    const authorId = request.params.id;
-    console.log(authorId);
     try {
-      if (!authorId)
-        throw new ErrorWithHttpCode(400, "Request param is not valid");
+      console.log("Get Author's Series request accepted");
+      const authorId = request.params.id;
+      if (!authorId) throw new ErrorWithHttpCode(400, "Request param is not valid");
       tokenInterceptor(request);
-      const result = await this.goodreadsAuthorService.getAuthorSeries(
-        authorId
-      );
+      const result = await this.goodreadsAuthorService.getAuthorSeries(authorId);
       response.json(result);
     } catch (error) {
       response
         .status(error.httpCode)
-        .json({ httpCode: error.httpCode, message: error.message });
+        .json({ httpCode: error.httpCode, message: error.userMessage });
     }
   }
 }

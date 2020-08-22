@@ -1,5 +1,6 @@
 import FeedService from "../services/feedService";
 import { tokenInterceptor } from "../http/interceptors";
+import { ErrorWithHttpCode } from "../error/ErrorWithHttpCode";
 
 const feedService = new FeedService();
 
@@ -10,11 +11,12 @@ class FeedController {
   }
 
   async getFeed(request, response) {
-    console.log("Get Feed request accepted");
-    const date = request.query.date;
     try {
+      console.log("Get Feed request accepted");
+      const date = request.query.date;
       const validated = tokenInterceptor(request);
       let result;
+
       if (!date) {
         result = await this.feedService.getAllUserFeed(validated.id);
       } else {
@@ -24,7 +26,7 @@ class FeedController {
     } catch (error) {
       response
         .status(error.httpCode || 500)
-        .json({ httpCode: error.httpCode, message: error.message });
+        .json({ httpCode: error.httpCode, message: error.userMessage });
     }
   }
 }
