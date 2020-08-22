@@ -147,7 +147,9 @@ class UserController {
       const result = await this.userBooksService.updateBook(validated.id, book);
       response.json(result);
     } catch (error) {
-      response.status(error.httpCode).json(error);
+      response
+        .status(error.httpCode)
+        .json({ httpCode: error.httpCode, message: error.userMessage });
     }
   }
 
@@ -158,7 +160,9 @@ class UserController {
       const result = await this.userBooksService.getUserGenres(validated.id);
       response.json(result);
     } catch (error) {
-      response.status(error.httpCode).json(error);
+      response
+        .status(error.httpCode)
+        .json({ httpCode: error.httpCode, message: error.userMessage });
     }
   }
 
@@ -175,8 +179,9 @@ class UserController {
 
       response.json(result);
     } catch (error) {
-      console.log(error);
-      response.status(error.httpCode || 500).json(error);
+      response
+        .status(error.httpCode)
+        .json({ httpCode: error.httpCode, message: error.userMessage });
     }
   }
 
@@ -187,8 +192,9 @@ class UserController {
       const result = await this.privateBookService.getPrivateBooks(validated.id);
       response.json(result);
     } catch (error) {
-      console.log(error);
-      response.status(error.httpCode || 500).json(error);
+      response
+        .status(error.httpCode)
+        .json({ httpCode: error.httpCode, message: error.userMessage });
     }
   }
 
@@ -200,8 +206,9 @@ class UserController {
       const result = await this.privateBookService.getPrivateBookById(validated.id, bookFid);
       response.json(result);
     } catch (error) {
-      console.log(error);
-      response.status(error.httpCode || 500).json(error);
+      response
+        .status(error.httpCode)
+        .json({ httpCode: error.httpCode, message: error.userMessage });
     }
   }
 }

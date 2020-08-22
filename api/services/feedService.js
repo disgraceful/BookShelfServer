@@ -111,7 +111,6 @@ class FeedService {
         return true;
       }
     });
-    console.log("clean", cleanFeed);
 
     cleanFeed.sort(compare); //reverse is simple, but compare is reliable
     return cleanFeed;
