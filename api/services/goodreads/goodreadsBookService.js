@@ -1,7 +1,6 @@
 import GoodreadsBaseService from "./goodreadsBaseService";
 import { ErrorWithHttpCode } from "../../error/ErrorWithHttpCode";
 import firebase from "firebase";
-import e from "express";
 
 class GoodreadsBookService extends GoodreadsBaseService {
   constructor(formatBookService) {
