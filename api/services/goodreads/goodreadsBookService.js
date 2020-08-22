@@ -1,6 +1,7 @@
 import GoodreadsBaseService from "./goodreadsBaseService";
 import { ErrorWithHttpCode } from "../../error/ErrorWithHttpCode";
 import firebase from "firebase";
+import e from "express";
 
 class GoodreadsBookService extends GoodreadsBaseService {
   constructor(formatBookService) {
@@ -32,40 +33,39 @@ class GoodreadsBookService extends GoodreadsBaseService {
 
   async getBookWithUserData(bookId, userId) {
     try {
-      const url = `${this.root}book/show/${bookId}.xml?key=${this.devKey}`;
-      const converted = await this.getValueFromGoodreads(url);
-      const book = this.findValue(converted, "book");
-      if (!book) {
-        throw new ErrorWithHttpCode(404, "Book not found");
-      }
+      const userBook = await this.fetchUserBookData(userId, bookId);
+      if (userBook) {
+        return userBook;
+      } else {
+        const url = `${this.root}book/show/${bookId}.xml?key=${this.devKey}`;
+        const converted = await this.getValueFromGoodreads(url);
+        const book = this.findValue(converted, "book");
+        if (!book) {
+          throw new ErrorWithHttpCode(404, "Book not found");
+        }
 
-      const formatted = this.formatBookService.formatBookForBookPage(book);
-      formatted.imageUrl = await this.getHQImage(formatted.imageUrl, formatted.isbn);
-      return await this.fetchUserBookData(userId, formatted);
+        const formatted = this.formatBookService.formatBookForBookPage(book);
+        formatted.imageUrl = await this.getHQImage(formatted.imageUrl, formatted.isbn);
+        return formatted;
+      }
     } catch (error) {
-      console.log(error);
       if (error.userMessage) throw error;
-      throw new ErrorWithHttpCode(error.httpCode || 500, error.message);
+      throw new ErrorWithHttpCode(500, "Something went wrong while retrieving book");
     }
   }
 
-  async fetchUserBookData(userId, book) {
-    try {
-      const snapshot = await firebase
-        .firestore()
-        .collection("users")
-        .doc(userId)
-        .collection("books")
-        .where("id", "==", book.id)
-        .get();
+  async fetchUserBookData(userId, bookId) {
+    const snapshot = await firebase
+      .firestore()
+      .collection("users")
+      .doc(userId)
+      .collection("books")
+      .where("id", "==", bookId)
+      .get();
 
-      if (snapshot.empty) return book;
-      else {
-        return snapshot.docs[0].data();
-      }
-    } catch (error) {
-      if (error.userMessage) throw error;
-      throw new ErrorWithHttpCode(error.httpCode || 500, error.message);
+    if (snapshot.empty) return false;
+    else {
+      return snapshot.docs[0].data();
     }
   }
 }

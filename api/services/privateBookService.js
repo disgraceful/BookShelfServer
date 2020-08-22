@@ -12,34 +12,35 @@ class PrivateBookService {
   }
 
   async getPrivateBookById(userId, bookFid) {
-    if (!bookFid) throw ErrorWithHttpCode(400, "Book identifier required");
-
-    const ref = this.getUserBooksAsFBCollection(userId);
-    const snapshot = await ref.child(bookFid).once("value");
-    const result = snapshot.val();
-    if (!result) throw new ErrorWithHttpCode(404, "No book found with that identifier");
-
-    return result;
+    try {
+      const bookSnapshot = await this.getUserBooksAsFBCollection(userId).doc(bookFid).get();
+      if (bookSnapshot.exists) {
+        return { id: bookSnapshot.id, ...bookSnapshot.data() };
+      } else {
+        throw new ErrorWithHttpCode(404, "Book not found");
+      }
+    } catch (error) {
+      if (error.userMessage) throw error;
+      throw new ErrorWithHttpCode(500, "Something went wrong while retrieving user book");
+    }
   }
 
   async getPrivateBooks(userId) {
-    const ref = this.getUserBooksAsFBCollection(userId);
-    const snapshot = await ref.once("value");
-    const books = snapshot.val();
-
-    if (!books) return [];
-
-    return (
-      Object.entries(books)
-        .filter((entry) => entry[1].private)
-        //get firebase Ids
-        .map((entry) => {
-          const bookWithId = { ...entry[1] };
-          bookWithId.fid = entry[0];
-          console.log(bookWithId);
-          return bookWithId;
-        })
-    );
+    try {
+      const snapshot = await this.getUserBooksAsFBCollection(userId)
+        .where("private", "==", true)
+        .get();
+      if (snapshot.empty) {
+        return [];
+      } else {
+        return snapshot.docs.map((doc) => {
+          return { id: doc.id, ...doc.data() };
+        });
+      }
+    } catch (error) {
+      if (error.userMessage) throw error;
+      throw new ErrorWithHttpCode(500, "Something went wrong while retrieving user books");
+    }
   }
 
   async saveUserBook(userId, book, cover) {
