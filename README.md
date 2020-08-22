@@ -1,6 +1,6 @@
 # BookShelf Server
 
-This pet project is an API for BookShelf application. It uses Goodreads API to find books, authors and series and formats them to json from xml for response. Users can rate and add books, authors and series to different categories (favorites, to-read, finished, etc). Users can also write reviews for read books and track their reading progress. Authorization is handled by Firebase, also Firebase Database is used to store user info.
+This pet project is an API for BookShelf web-application, designed to be a book library administration system. Main goal is to create application where users can track their books, their reading progress, write down some memorable notes or get information about authors and series. There are also some neat features planned like adding your own private book to your collection, whether or not it is unpublished rare edition or simply an article you read and want to save somewhere.
 
 ## Table of contents
 
@@ -10,21 +10,22 @@ This pet project is an API for BookShelf application. It uses Goodreads API to f
 - [API routes](#routes)
 - [Features](#features)
 - [Directories](#directories)
+- [Inspiration](#inspiration)
 
 ## General info
 
-The goal of the project is to create an API for web-application, which encapsulates all main features of book library administration system (etc Goodreads), but without social network elements. Only books and nothing more.
+The project uses Goodreads API to search for all book related stuff and formats responses to json from xml. The search supports only latin symbols and solutions to make other langauges avaliable are researched. Authorization is handled by Firebase, for now only email/password, but OAuth authorization is coming soon. User info is stored in ~~Firebase Realtime Database~~ Cloud Firestore, which is newer, has way better syntax and data structure with collections. Files, such as private book's covers are stored in Firebase Storage.
 
-Also I want to learn more about fullstack development, new technologies and workflow between front-end and back-end.
+I started this project because I wanted to learn more about fullstack development, new technologies and general workflow between front-end and back-end. Also I wanted to create a simple solution for storing books I read.
 
 ## Technologies
 
 - Express.js - version 4.17
-- Firebase - version 7.15
-- Webpack - version 4.43
+- Firebase - version 7.19
+- Webpack - version 4.44
 - Axios - version 0.19
-- Mocha - version 8.0.1
-- Moment.js - version 2.24
+- Mocha - version 8.1.1
+- Moment.js - version 2.27
 
 ## Setup
 
@@ -94,7 +95,13 @@ CRUD calls for manipulating user books collection, favorites, etc.
 /user/feed
 ```
 
-Get User Feed records
+Get User Feed records.
+
+```
+/user/upload
+```
+
+Save/Retrieve user's private books.
 
 ## Features
 
@@ -103,13 +110,14 @@ Get User Feed records
 - [x] JWT-based API access
 - [x] Token check and refresh at expiration
 - [x] User Feed
+- [x] File upload to Firebase Storage
 
 ### To-do list:
 
-- [ ] Change user account settings
-- [ ] File upload to Firebase Storage
-- [ ] Email notifications via Firebase
 - [ ] Deploy and host
+- [ ] Advanced search
+- [ ] Change user account settings
+- [ ] Email notifications via Firebase
 - [ ] Authorization with OAuth (Low-prio)
 - [ ] Gathering User Statistics (Low-prio)
 - [ ] Migrate to Cloud Firestore
@@ -139,3 +147,7 @@ Get User Feed records
 ```
 /api/error - error class
 ```
+
+## Inspiration
+
+This project is inspired (and maybe plagiarized a little) by [MyShows](https://en.myshows.me/) website.
