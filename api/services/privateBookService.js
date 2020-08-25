@@ -48,8 +48,10 @@ class PrivateBookService {
       if (!book.title || !book.author || Number.isNaN(+book.pages)) {
         throw new ErrorWithHttpCode(400, "Book information is invalid");
       }
+      const addedBookDoc = this.getUserBooksAsFBCollection(userId).doc();
 
       const privateBook = {
+        id: addedBookDoc.id,
         title: book.title,
         authors: book.author,
         pages: +book.pages,
@@ -58,8 +60,6 @@ class PrivateBookService {
         userData: { ...new UserData() }, // Firebase can't process custom objects like this!
         private: true,
       };
-
-      const addedBookDoc = this.getUserBooksAsFBCollection(userId).doc();
 
       if (!cover) {
         privateBook.imageUrl = defaultImgUrl;
