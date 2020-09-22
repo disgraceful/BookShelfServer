@@ -28,6 +28,7 @@ class UserController {
     this.savePrivateBook = this.savePrivateBook.bind(this);
     this.getAllPrivateBooks = this.getAllPrivateBooks.bind(this);
     this.getPrivateBookById = this.getPrivateBookById.bind(this);
+    this.removePrivateBook = this.removePrivateBook.bind(this);
   }
 
   async getUser(request, response) {
@@ -204,6 +205,20 @@ class UserController {
       const validated = tokenInterceptor(request);
       const bookFid = request.params.id;
       const result = await this.privateBookService.getPrivateBookById(validated.id, bookFid);
+      response.json(result);
+    } catch (error) {
+      response
+        .status(error.httpCode)
+        .json({ httpCode: error.httpCode, message: error.userMessage });
+    }
+  }
+
+  async removePrivateBook(request, response) {
+    console.log("Delete User's private book request accepted");
+    try {
+      const validated = tokenInterceptor(request);
+      const bookFid = request.query.id;
+      const result = await this.privateBookService.removePrivateBook(validated.id, bookFid);
       response.json(result);
     } catch (error) {
       response
