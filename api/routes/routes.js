@@ -30,4 +30,5 @@ export default (app) => {
   app.get("/user/upload", UserController.getAllPrivateBooks);
   app.get("/user/upload/:id", UserController.getPrivateBookById);
   app.post("/user/upload", upload.single("cover"), UserController.savePrivateBook);
+  app.delete("/user/upload", UserController.removePrivateBook);
 };

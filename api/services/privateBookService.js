@@ -117,6 +117,12 @@ class PrivateBookService {
       throw new ErrorWithHttpCode(500, "Something went wrong while saving private book");
     }
   }
+
+  async removePrivateBook(userId, bookId) {
+    const collection = this.getUserBooksAsFBCollection(userId);
+    await collection.doc(bookId).delete();
+    return true;
+  }
 }
 
 export default PrivateBookService;
