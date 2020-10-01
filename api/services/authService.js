@@ -59,6 +59,41 @@ class AuthService {
       );
     }
   }
+
+  async signInGoogle(token) {
+    try {
+      const credential = firebase.auth.GoogleAuthProvider.credential(token);
+      await firebase.auth().signInWithCredential(credential);
+      const user = firebase.auth().currentUser;
+      console.log(user.email);
+      if (user.email) {
+        const saved = await this.saveUser(user.email);
+        return { ...saved };
+      }
+    } catch (error) {
+      // change error msg
+      errorHanding.authErrorHandler(
+        error,
+        "Ooops! Something went wrong while creating your account! Try again."
+      );
+    }
+  }
+
+  async saveUser(email) {
+    const newUser = {
+      email,
+      books: [],
+      feed: [],
+    };
+
+    const doc = firebase.firestore().collection("users").doc();
+    await doc.set(newUser);
+
+    const userId = doc.id;
+    newUser.id = userId;
+    const token = this.tokenService.createToken({ id: userId, email }, 2592000);
+    return { ...newUser, token };
+  }
 }
 
 export default AuthService;

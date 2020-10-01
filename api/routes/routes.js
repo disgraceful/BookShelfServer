@@ -12,6 +12,8 @@ const upload = multer();
 export default (app) => {
   app.post("/auth/login", AuthController.signInUser);
   app.post("/auth/register", AuthController.signUpUser);
+  app.post("/auth/google/login", AuthController.signInWithGoogle);
+  app.post("/auht/google/register", AuthController.signUpWithGoogle);
   app.get("/books/search", BookController.searchByTitleOrAuthor);
   app.get("/books/:bookId", BookController.getBookById);
   app.get("/user", UserController.getUser);
