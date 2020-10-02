@@ -85,14 +85,14 @@ class AuthService {
         const newUser = await this.saveUser(user.email);
         return { ...newUser };
       } else {
-        throw new ErrorWithHttpCode(500, `Failed to authenticate User`);
+        throw new ErrorWithHttpCode(500, `Failed to authenticate Google user`);
       }
     } catch (error) {
       // change error msg
       console.log(error);
       errorHanding.authErrorHandler(
         error,
-        "Ooops! Something went wrong while creating your account! Try again."
+        "Ooops! Something went wrong while linking your Google account! Try again."
       );
     }
   }
