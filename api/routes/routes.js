@@ -13,6 +13,8 @@ export default (app) => {
   app.post("/auth/login", AuthController.signInUser);
   app.post("/auth/register", AuthController.signUpUser);
   app.post("/auth/google/login", AuthController.signInWithGoogle);
+  app.get("/auth/twitter/url", AuthController.getRequestUrl);
+  app.post("/auth/twitter/login", AuthController.signInWithTwitter);
   app.get("/books/search", BookController.searchByTitleOrAuthor);
   app.get("/books/:bookId", BookController.getBookById);
   app.get("/user", UserController.getUser);

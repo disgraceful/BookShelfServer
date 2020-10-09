@@ -2,10 +2,20 @@ import "dotenv/config";
 import firebase from "firebase";
 import { ErrorWithHttpCode } from "../error/ErrorWithHttpCode";
 import errorHanding from "./errorHanding";
+import oauth from "oauth";
 
 class AuthService {
   constructor(tokenService) {
     this.tokenService = tokenService;
+    this.consumer = new oauth.OAuth(
+      "https://twitter.com/oauth/request_token",
+      "https://twitter.com/oauth/access_token",
+      process.env.TWITTER_KEY,
+      process.env.TWITTER_SECRET,
+      "1.0A",
+      "http://localhost:8000/login",
+      "HMAC-SHA1"
+    );
   }
 
   async getUserByEmail(email) {
@@ -70,6 +80,22 @@ class AuthService {
     }
   }
 
+  async saveUser(email) {
+    const newUser = {
+      email,
+      books: [],
+      feed: [],
+    };
+
+    const doc = firebase.firestore().collection("users").doc();
+    await doc.set(newUser);
+
+    const userId = doc.id;
+    newUser.id = userId;
+    const token = this.tokenService.createToken({ id: userId, email }, 2592000);
+    return { ...newUser, token };
+  }
+
   async signInGoogle(token) {
     try {
       const credential = firebase.auth.GoogleAuthProvider.credential(token);
@@ -88,7 +114,6 @@ class AuthService {
         throw new ErrorWithHttpCode(500, `Failed to authenticate Google user`);
       }
     } catch (error) {
-      // change error msg
       console.log(error);
       errorHanding.authErrorHandler(
         error,
@@ -97,20 +122,50 @@ class AuthService {
     }
   }
 
-  async saveUser(email) {
-    const newUser = {
-      email,
-      books: [],
-      feed: [],
-    };
+  getAuthorizeUrl() {
+    return new Promise((resolve, reject) => {
+      this.consumer.getOAuthRequestToken((error, token, tokenSecret) => {
+        if (error) {
+          reject(new ErrorWithHttpCode(500, "Failed to get request token"));
+        }
 
-    const doc = firebase.firestore().collection("users").doc();
-    await doc.set(newUser);
+        resolve({ url: `https://api.twitter.com/oauth/authorize?oauth_token=${token}` });
+      });
+    });
+  }
 
-    const userId = doc.id;
-    newUser.id = userId;
-    const token = this.tokenService.createToken({ id: userId, email }, 2592000);
-    return { ...newUser, token };
+  getAccessToken(reqToken, verifier) {
+    return new Promise((resolve, reject) => {
+      this.consumer.getOAuthAccessToken(
+        reqToken,
+        process.env.TWITTER_SECRET,
+        verifier,
+        (error, accessToken, accessTokenSecret) => {
+          if (error) {
+            reject(new ErrorWithHttpCode(500, "Failed to get access token"));
+          }
+          resolve({ token: accessToken, secret: accessTokenSecret });
+        }
+      );
+    });
+  }
+
+  async signInTwitter(token, secret) {
+    const credential = firebase.auth.TwitterAuthProvider.credential(token, secret);
+
+    await firebase.auth().signInWithCredential(credential);
+    const user = firebase.auth().currentUser;
+
+    if (user.email) {
+      const existingUser = await this.getUserByEmail(user.email);
+      if (existingUser) {
+        return { ...existingUser };
+      }
+      const newUser = await this.saveUser(user.email);
+      return { ...newUser };
+    } else {
+      throw new ErrorWithHttpCode(500, `Failed to authenticate Twitter user`);
+    }
   }
 }
 
