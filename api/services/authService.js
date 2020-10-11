@@ -99,9 +99,8 @@ class AuthService {
   async signInGoogle(token) {
     try {
       const credential = firebase.auth.GoogleAuthProvider.credential(token);
-      await firebase.auth().signInWithCredential(credential);
-      const user = firebase.auth().currentUser;
-
+      const fbUser = await firebase.auth().signInWithCredential(credential);
+      const user = fbUser.user;
       console.log(user.email);
       if (user.email) {
         const existingUser = await this.getUserByEmail(user.email);
@@ -115,6 +114,8 @@ class AuthService {
       }
     } catch (error) {
       console.log(error);
+      //Since Google is more 'trusted' than others providers, it will override every other sign-in provider
+
       errorHanding.authErrorHandler(
         error,
         "Ooops! Something went wrong while linking your Google account! Try again."
@@ -151,20 +152,32 @@ class AuthService {
   }
 
   async signInTwitter(token, secret) {
-    const credential = firebase.auth.TwitterAuthProvider.credential(token, secret);
+    try {
+      const credential = firebase.auth.TwitterAuthProvider.credential(token, secret);
 
-    await firebase.auth().signInWithCredential(credential);
-    const user = firebase.auth().currentUser;
+      const fbUser = await firebase.auth().signInWithCredential(credential);
+      const user = fbUser.user;
 
-    if (user.email) {
-      const existingUser = await this.getUserByEmail(user.email);
-      if (existingUser) {
-        return { ...existingUser };
+      if (user.email) {
+        const existingUser = await this.getUserByEmail(user.email);
+        if (existingUser) {
+          return { ...existingUser };
+        }
+        const newUser = await this.saveUser(user.email);
+        return { ...newUser };
+      } else {
+        throw new ErrorWithHttpCode(500, `Failed to authenticate Twitter user`);
       }
-      const newUser = await this.saveUser(user.email);
-      return { ...newUser };
-    } else {
-      throw new ErrorWithHttpCode(500, `Failed to authenticate Twitter user`);
+    } catch (error) {
+      console.log(error);
+      let message;
+      if (error.code.includes("different-credential"))
+        message = "Email is already associated with another account";
+
+      errorHanding.authErrorHandler(
+        error,
+        message || "Ooops! Something went wrong while linking your Twitter account! Try again."
+      );
     }
   }
 }
