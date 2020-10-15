@@ -118,10 +118,19 @@ class PrivateBookService {
     }
   }
 
-  async removePrivateBook(userId, bookId) {
-    const collection = this.getUserBooksAsFBCollection(userId);
-    await collection.doc(bookId).delete();
-    return true;
+  async removePrivateBook(userId, bookId, url) {
+    try {
+      const collection = this.getUserBooksAsFBCollection(userId);
+      await collection.doc(bookId).delete();
+
+      if (!url.includes("nophoto")) {
+        await firebase.storage().refFromURL(url).delete();
+      }
+      return true;
+    } catch (error) {
+      console.log(error);
+      throw new ErrorWithHttpCode(500, "Something went wrong while removing private book");
+    }
   }
 }
 
