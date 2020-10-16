@@ -141,15 +141,18 @@ class FeedService {
           id = item.data.id;
           const sameIdRecords = filtered.filter((item) => item.data.id === id);
           const pages = sameIdRecords.reduce(pageReducer, 0);
-
           const mergeIndex = this.getMergeIndex(feed[key], item.data.id);
           const mergeCount = sameIdRecords.length;
 
-          feed[key].splice(
-            mergeIndex,
-            mergeCount,
-            this.generateFeed(item.data, "update", { pages })
-          );
+          if (pages > 0) {
+            feed[key].splice(
+              mergeIndex,
+              mergeCount,
+              this.generateFeed(item.data, "update", { pages })
+            );
+          } else {
+            feed[key].splice(mergeIndex, mergeCount);
+          }
         }
       });
     });
@@ -175,7 +178,7 @@ class FeedService {
 }
 
 const pageReducer = (prevValue, curValue) => {
-  return prevValue + Number.parseInt(curValue.message.replace(/\D/g, ""));
+  return prevValue + Number.parseInt(curValue.message.replace(/[^-\d]/g, ""));
 };
 
 const compare = (recordA, recordB) => {

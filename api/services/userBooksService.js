@@ -146,10 +146,8 @@ class UserBooksService {
         const id = doc.id;
         const oldBook = doc.data();
         const pageDiff = book.userData.pagesRead - oldBook.userData.pagesRead;
-        console.log("pageDiff", pageDiff);
-        if (pageDiff > 0) {
-          await this.feedService.saveFeed(book, "update", userId, { pages: pageDiff });
-        }
+        console.log(pageDiff);
+        await this.feedService.saveFeed(book, "update", userId, { pages: pageDiff });
         if (Math.abs(book.userData.rating - oldBook.userData.rating) > 0) {
           await this.feedService.saveFeed(book, "rating", userId, {
             rating: book.userData.rating,
