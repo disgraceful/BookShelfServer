@@ -118,13 +118,12 @@ class FeedService {
 
   formatFeedByDate(feed) {
     const feedMap = {};
-
     feed.forEach((item) => {
       if (!feedMap.hasOwnProperty(item.date)) {
         feedMap[item.date] = [item];
       } else {
         const curRecord = feedMap[item.date];
-        curRecord.unshift(item);
+        curRecord.push(item);
       }
     });
 
