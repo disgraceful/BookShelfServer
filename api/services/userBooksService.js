@@ -169,6 +169,7 @@ class UserBooksService {
       const books = await this.getUserBooksAsArray(userId);
       let genreMap = {};
       books.forEach((book) => {
+        if (!book.genres) return;
         book.genres.slice(0, 2).forEach((genre) => {
           if (!genreMap.hasOwnProperty(genre)) {
             genreMap[genre] = 1;
@@ -179,6 +180,7 @@ class UserBooksService {
       });
       return genreMap;
     } catch (error) {
+      console.log(error);
       if (error.userMessage) throw error;
       throw new ErrorWithHttpCode(500, "Ooops! Something went wrong while retrieving user genres");
     }
