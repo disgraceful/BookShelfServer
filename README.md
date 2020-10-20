@@ -59,7 +59,19 @@ All API calls return json objects.
 /auth
 ```
 
-User's registration, login, JWT verification.
+User's registration, login, JWT verification
+
+```
+/auth/google
+```
+
+Authorization with Google
+
+```
+/auth/twitter
+```
+
+Authorization with Twitter: getting redirect URL and sign in
 
 ```
 /books
@@ -111,6 +123,7 @@ Save/Retrieve user's private books.
 - [x] Token check and refresh at expiration
 - [x] User Feed
 - [x] File upload to Firebase Storage
+- [x] Authorization with OAuth (Google + Twitter)
 
 ### To-do list:
 
@@ -118,7 +131,6 @@ Save/Retrieve user's private books.
 - [ ] Advanced search
 - [ ] Change user account settings
 - [ ] Email notifications via Firebase
-- [ ] Authorization with OAuth (Low-prio)
 - [ ] Gathering User Statistics (Low-prio)
 - [ ] Migrate to Cloud Firestore
 
