@@ -57,11 +57,8 @@ class AuthService {
     try {
       await firebase.auth().createUserWithEmailAndPassword(email, password);
 
-      //Do I need to define books and feed?
       const newUser = {
         email,
-        books: [],
-        feed: [],
       };
 
       const docRef = firebase.firestore().collection("users").doc();
@@ -83,8 +80,6 @@ class AuthService {
   async saveUser(email) {
     const newUser = {
       email,
-      books: [],
-      feed: [],
     };
 
     const doc = firebase.firestore().collection("users").doc();
