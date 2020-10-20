@@ -62,15 +62,15 @@ class FormatBookService {
   }
 
   formatSeriesForBook(series) {
+    if (!series) return null;
     if (Array.isArray(series)) {
       series = series[0];
     }
-    return series
-      ? {
-          id: series.series.id._text,
-          fullName: `(${series.series.title._cdata.trim()} #${series.user_position._text})`,
-        }
-      : null;
+    let id = series.series.id._text;
+    let position = series.user_position._text ? ` #${series.user_position._text}` : "";
+    let fullName = `(${series.series.title._cdata.trim()}${position})`;
+
+    return { id, fullName };
   }
 
   formatAuthor(authors) {

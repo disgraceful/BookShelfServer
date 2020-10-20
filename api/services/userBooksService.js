@@ -48,6 +48,7 @@ class UserBooksService {
       if (!avaliableBookStatus.includes(collection.toLowerCase())) {
         throw new ErrorWithHttpCode(400, "Book status is invalid");
       }
+      console.log(book);
       // Determine if book IS in collection.
       const userBooksCollection = this.getUserBooksAsFBCollection(userId);
       const snapshot = await userBooksCollection.where("id", "==", book.id).get();
@@ -61,7 +62,7 @@ class UserBooksService {
         const doc = snapshot.docs[0];
         const existingBookId = doc.id;
         await userBooksCollection.doc(existingBookId).update({
-          "userData.status": collection,
+          userData: book.userData,
         });
       }
       await this.feedService.saveFeed(book, collection, userId);
@@ -146,10 +147,8 @@ class UserBooksService {
         const id = doc.id;
         const oldBook = doc.data();
         const pageDiff = book.userData.pagesRead - oldBook.userData.pagesRead;
-        console.log("pageDiff", pageDiff);
-        if (pageDiff > 0) {
-          await this.feedService.saveFeed(book, "update", userId, { pages: pageDiff });
-        }
+        console.log(pageDiff);
+        await this.feedService.saveFeed(book, "update", userId, { pages: pageDiff });
         if (Math.abs(book.userData.rating - oldBook.userData.rating) > 0) {
           await this.feedService.saveFeed(book, "rating", userId, {
             rating: book.userData.rating,
@@ -171,6 +170,7 @@ class UserBooksService {
       const books = await this.getUserBooksAsArray(userId);
       let genreMap = {};
       books.forEach((book) => {
+        if (!book.genres) return;
         book.genres.slice(0, 2).forEach((genre) => {
           if (!genreMap.hasOwnProperty(genre)) {
             genreMap[genre] = 1;
@@ -181,6 +181,7 @@ class UserBooksService {
       });
       return genreMap;
     } catch (error) {
+      console.log(error);
       if (error.userMessage) throw error;
       throw new ErrorWithHttpCode(500, "Ooops! Something went wrong while retrieving user genres");
     }

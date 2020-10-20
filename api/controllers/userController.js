@@ -218,7 +218,9 @@ class UserController {
     try {
       const validated = tokenInterceptor(request);
       const bookFid = request.query.id;
-      const result = await this.privateBookService.removePrivateBook(validated.id, bookFid);
+      const url = request.query.url;
+      console.log(url);
+      const result = await this.privateBookService.removePrivateBook(validated.id, bookFid, url);
       response.json(result);
     } catch (error) {
       response
