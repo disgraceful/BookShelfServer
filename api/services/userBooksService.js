@@ -48,6 +48,7 @@ class UserBooksService {
       if (!avaliableBookStatus.includes(collection.toLowerCase())) {
         throw new ErrorWithHttpCode(400, "Book status is invalid");
       }
+      console.log(book);
       // Determine if book IS in collection.
       const userBooksCollection = this.getUserBooksAsFBCollection(userId);
       const snapshot = await userBooksCollection.where("id", "==", book.id).get();
@@ -61,7 +62,7 @@ class UserBooksService {
         const doc = snapshot.docs[0];
         const existingBookId = doc.id;
         await userBooksCollection.doc(existingBookId).update({
-          "userData.status": collection,
+          userData: book.userData,
         });
       }
       await this.feedService.saveFeed(book, collection, userId);
