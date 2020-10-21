@@ -57,21 +57,7 @@ class AuthService {
     try {
       await firebase.auth().createUserWithEmailAndPassword(email, password);
 
-      //Do I need to define books and feed?
-      const newUser = {
-        email,
-        books: [],
-        feed: [],
-      };
-
-      const docRef = firebase.firestore().collection("users").doc();
-      await docRef.set(newUser);
-
-      const userId = docRef.id;
-      newUser.id = userId;
-      const token = this.tokenService.createToken({ id: userId, email }, 2592000);
-
-      return { ...newUser, token };
+      return await { ...this.saveUser(email) };
     } catch (error) {
       errorHanding.authErrorHandler(
         error,
@@ -83,8 +69,6 @@ class AuthService {
   async saveUser(email) {
     const newUser = {
       email,
-      books: [],
-      feed: [],
     };
 
     const doc = firebase.firestore().collection("users").doc();

@@ -25,6 +25,25 @@ class GoodreadsAuthorService extends GoodreadsBaseService {
     }
   }
 
+  async getAuthorBooks(id) {
+    try {
+      const url = `${this.root}author/list/${id}?key=${this.devKey}`;
+      const converted = await this.getValueFromGoodreads(url);
+      let author = this.findValue(converted, "author");
+      author = this.formatAuthorService.formatAuthorMin(author);
+      const books = this.findValue(converted, "books");
+      if (!books || books.length < 1) {
+        throw new ErrorWithHttpCode(404, "Data was not found");
+      }
+      const arr = this.formatAuthorService.formatAuthorBooks(books);
+      return { author, bookIds: arr };
+    } catch (error) {
+      console.log(error);
+      if (error.userMessage) throw error;
+      throw new ErrorWithHttpCode(error.httpCode || 500, error.message);
+    }
+  }
+
   async getAuthorSeries(id) {
     try {
       const url = `${this.root}series/list/${id}.xml?key=${this.devKey}`;

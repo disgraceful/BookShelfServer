@@ -19,6 +19,10 @@ class FormatAuthorService extends FormatBookService {
     };
   }
 
+  formatAuthorMin(author) {
+    return { name: author.name._text };
+  }
+
   formatAuthorBooks(books) {
     const authorBooks = books.book;
     return this.mapArrayIds(authorBooks);
