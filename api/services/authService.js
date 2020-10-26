@@ -18,42 +18,58 @@ class AuthService {
     );
   }
 
-  async getUserByEmail(email) {
-    const snapshot = await firebase
-      .firestore()
-      .collection("users")
-      .where("email", "==", email)
-      .get();
+  async test(id) {
+    if (firebase.auth().currentUser) {
+      console.log(firebase.auth().currentUser.uid);
+    } else {
+      console.log("nothinf is authenticated");
+    }
 
-    if (snapshot.empty) {
+    const snap = await firebase.firestore().collection("users").doc(id).get();
+    if (snap.exists) {
+      return snap.data();
+    }
+  }
+
+  async getUserProfile(id) {
+    const snapshot = await firebase.firestore().collection("users").doc(id).get();
+
+    if (!snapshot.exists) {
       return null;
     }
 
-    const doc = snapshot.docs[0];
-    const existingUser = doc.data();
-    existingUser.id = doc.id;
+    const existingUser = snapshot.data();
+    existingUser.id = id;
 
-    const token = this.tokenService.createToken({ id: doc.id, email }, 2592000); //30 days
-    return { ...existingUser, token };
+    return existingUser;
+  }
+
+  createToken(userId, email) {
+    return this.tokenService.createToken({ id: userId, email }, 2592000); //30 days
   }
 
   async getUser(email, password) {
     try {
+      await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.NONE);
       await firebase.auth().signInWithEmailAndPassword(email, password);
-      const user = await this.getUserByEmail(email);
+      let id = firebase.auth().currentUser.uid;
+      const user = await this.getUserProfile(id);
 
       if (!user) {
         throw new ErrorWithHttpCode(404, `User with email ${email} does not exist!`);
       }
 
-      return { ...user };
+      return { ...user, token: this.createToken(id, email) };
     } catch (error) {
+      console.log(error);
+
       errorHanding.authErrorHandler(error, "Someting went wrong while signing you in! Try again!");
     }
   }
 
   async createUser(email, password) {
     try {
+      await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.NONE);
       await firebase.auth().createUserWithEmailAndPassword(email, password);
       let uid = firebase.auth().currentUser.uid;
       let saved = await this.saveUser(email, uid);
@@ -76,20 +92,22 @@ class AuthService {
     await doc.set(newUser);
 
     newUser.id = uid;
-    const token = this.tokenService.createToken({ id: uid, email }, 2592000);
+    const token = this.createToken(uid, email);
     return { ...newUser, token };
   }
 
   async signInGoogle(token) {
     try {
+      await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.NONE);
       const credential = firebase.auth.GoogleAuthProvider.credential(token);
       const fbUser = await firebase.auth().signInWithCredential(credential);
       const user = fbUser.user;
 
       if (user.email) {
-        const existingUser = await this.getUserByEmail(user.email);
+        const existingUser = await this.getUserProfile(user.uid);
+        const token = this.createToken(user.uid, user.email);
         if (existingUser) {
-          return { ...existingUser };
+          return { ...existingUser, token };
         }
         const newUser = await this.saveUser(user.email, user.uid);
         return { ...newUser };
@@ -137,14 +155,16 @@ class AuthService {
 
   async signInTwitter(token, secret) {
     try {
+      await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.NONE);
       const credential = firebase.auth.TwitterAuthProvider.credential(token, secret);
       const fbUser = await firebase.auth().signInWithCredential(credential);
       const user = fbUser.user;
 
       if (user.email) {
-        const existingUser = await this.getUserByEmail(user.email);
+        const existingUser = await this.getUserProfile(user.uid);
+        const token = this.createToken(user.uid, user.email);
         if (existingUser) {
-          return { ...existingUser };
+          return { ...existingUser, token };
         }
         const newUser = await this.saveUser(user.email, user.uid);
         return { ...newUser };
