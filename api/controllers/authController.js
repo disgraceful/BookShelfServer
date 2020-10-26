@@ -13,6 +13,17 @@ class AuthController {
     this.signInWithGoogle = this.signInWithGoogle.bind(this);
     this.signInWithTwitter = this.signInWithTwitter.bind(this);
     this.getRequestUrl = this.getRequestUrl.bind(this);
+    this.testRules = this.testRules.bind(this);
+  }
+
+  async testRules(request, response) {
+    try {
+      let id = request.query.id;
+
+      response.json(await this.authService.test(id));
+    } catch (error) {
+      response.status(500).json(error);
+    }
   }
 
   async signInUser(request, response) {
