@@ -40,7 +40,6 @@ class AuthService {
   async getUser(email, password) {
     try {
       await firebase.auth().signInWithEmailAndPassword(email, password);
-
       const user = await this.getUserByEmail(email);
 
       if (!user) {
@@ -56,9 +55,11 @@ class AuthService {
   async createUser(email, password) {
     try {
       await firebase.auth().createUserWithEmailAndPassword(email, password);
-
-      return await { ...this.saveUser(email) };
+      let uid = firebase.auth().currentUser.uid;
+      let saved = await this.saveUser(email, uid);
+      return { ...saved };
     } catch (error) {
+      console.log(error);
       errorHanding.authErrorHandler(
         error,
         "Ooops! Something went wrong while creating your account! Try again."
@@ -66,17 +67,16 @@ class AuthService {
     }
   }
 
-  async saveUser(email) {
+  async saveUser(email, uid) {
     const newUser = {
       email,
     };
 
-    const doc = firebase.firestore().collection("users").doc();
+    const doc = firebase.firestore().collection("users").doc(uid);
     await doc.set(newUser);
 
-    const userId = doc.id;
-    newUser.id = userId;
-    const token = this.tokenService.createToken({ id: userId, email }, 2592000);
+    newUser.id = uid;
+    const token = this.tokenService.createToken({ id: uid, email }, 2592000);
     return { ...newUser, token };
   }
 
@@ -85,13 +85,13 @@ class AuthService {
       const credential = firebase.auth.GoogleAuthProvider.credential(token);
       const fbUser = await firebase.auth().signInWithCredential(credential);
       const user = fbUser.user;
-      console.log(user.email);
+
       if (user.email) {
         const existingUser = await this.getUserByEmail(user.email);
         if (existingUser) {
           return { ...existingUser };
         }
-        const newUser = await this.saveUser(user.email);
+        const newUser = await this.saveUser(user.email, user.uid);
         return { ...newUser };
       } else {
         throw new ErrorWithHttpCode(500, `Failed to authenticate Google user`);
@@ -138,7 +138,6 @@ class AuthService {
   async signInTwitter(token, secret) {
     try {
       const credential = firebase.auth.TwitterAuthProvider.credential(token, secret);
-
       const fbUser = await firebase.auth().signInWithCredential(credential);
       const user = fbUser.user;
 
@@ -147,17 +146,12 @@ class AuthService {
         if (existingUser) {
           return { ...existingUser };
         }
-        const newUser = await this.saveUser(user.email);
+        const newUser = await this.saveUser(user.email, user.uid);
         return { ...newUser };
       } else {
         throw new ErrorWithHttpCode(500, `Failed to authenticate Twitter user`);
       }
     } catch (error) {
-      console.log(error);
-      let message;
-      if (error.code.includes("different-credential"))
-        message = "Email is already associated with another account";
-
       errorHanding.authErrorHandler(
         error,
         message || "Ooops! Something went wrong while linking your Twitter account! Try again."
