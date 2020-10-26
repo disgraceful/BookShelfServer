@@ -23,7 +23,8 @@ export default {
       httpCode = 404;
     } else if (error.code === "auth/wrong-password") {
       errorMessage = "Incorrect password!";
-      console.log(errorMessage);
+    } else if (error.code.includes("different-credential")) {
+      errorMessage = "Email is already associated with another account";
     } else {
       errorMessage = defaultMessage;
     }

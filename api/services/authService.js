@@ -18,47 +18,64 @@ class AuthService {
     );
   }
 
-  async getUserByEmail(email) {
-    const snapshot = await firebase
-      .firestore()
-      .collection("users")
-      .where("email", "==", email)
-      .get();
+  async test(id) {
+    if (firebase.auth().currentUser) {
+      console.log(firebase.auth().currentUser.uid);
+    } else {
+      console.log("nothinf is authenticated");
+    }
 
-    if (snapshot.empty) {
+    const snap = await firebase.firestore().collection("users").doc(id).get();
+    if (snap.exists) {
+      return snap.data();
+    }
+  }
+
+  async getUserProfile(id) {
+    const snapshot = await firebase.firestore().collection("users").doc(id).get();
+
+    if (!snapshot.exists) {
       return null;
     }
 
-    const doc = snapshot.docs[0];
-    const existingUser = doc.data();
-    existingUser.id = doc.id;
+    const existingUser = snapshot.data();
+    existingUser.id = id;
 
-    const token = this.tokenService.createToken({ id: doc.id, email }, 2592000); //30 days
-    return { ...existingUser, token };
+    return existingUser;
+  }
+
+  createToken(userId, email) {
+    return this.tokenService.createToken({ id: userId, email }, 2592000); //30 days
   }
 
   async getUser(email, password) {
     try {
+      await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.NONE);
       await firebase.auth().signInWithEmailAndPassword(email, password);
-
-      const user = await this.getUserByEmail(email);
+      let id = firebase.auth().currentUser.uid;
+      const user = await this.getUserProfile(id);
 
       if (!user) {
         throw new ErrorWithHttpCode(404, `User with email ${email} does not exist!`);
       }
 
-      return { ...user };
+      return { ...user, token: this.createToken(id, email) };
     } catch (error) {
+      console.log(error);
+
       errorHanding.authErrorHandler(error, "Someting went wrong while signing you in! Try again!");
     }
   }
 
   async createUser(email, password) {
     try {
+      await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.NONE);
       await firebase.auth().createUserWithEmailAndPassword(email, password);
-
-      return await { ...this.saveUser(email) };
+      let uid = firebase.auth().currentUser.uid;
+      let saved = await this.saveUser(email, uid);
+      return { ...saved };
     } catch (error) {
+      console.log(error);
       errorHanding.authErrorHandler(
         error,
         "Ooops! Something went wrong while creating your account! Try again."
@@ -66,32 +83,33 @@ class AuthService {
     }
   }
 
-  async saveUser(email) {
+  async saveUser(email, uid) {
     const newUser = {
       email,
     };
 
-    const doc = firebase.firestore().collection("users").doc();
+    const doc = firebase.firestore().collection("users").doc(uid);
     await doc.set(newUser);
 
-    const userId = doc.id;
-    newUser.id = userId;
-    const token = this.tokenService.createToken({ id: userId, email }, 2592000);
+    newUser.id = uid;
+    const token = this.createToken(uid, email);
     return { ...newUser, token };
   }
 
   async signInGoogle(token) {
     try {
+      await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.NONE);
       const credential = firebase.auth.GoogleAuthProvider.credential(token);
       const fbUser = await firebase.auth().signInWithCredential(credential);
       const user = fbUser.user;
-      console.log(user.email);
+
       if (user.email) {
-        const existingUser = await this.getUserByEmail(user.email);
+        const existingUser = await this.getUserProfile(user.uid);
+        const token = this.createToken(user.uid, user.email);
         if (existingUser) {
-          return { ...existingUser };
+          return { ...existingUser, token };
         }
-        const newUser = await this.saveUser(user.email);
+        const newUser = await this.saveUser(user.email, user.uid);
         return { ...newUser };
       } else {
         throw new ErrorWithHttpCode(500, `Failed to authenticate Google user`);
@@ -137,27 +155,23 @@ class AuthService {
 
   async signInTwitter(token, secret) {
     try {
+      await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.NONE);
       const credential = firebase.auth.TwitterAuthProvider.credential(token, secret);
-
       const fbUser = await firebase.auth().signInWithCredential(credential);
       const user = fbUser.user;
 
       if (user.email) {
-        const existingUser = await this.getUserByEmail(user.email);
+        const existingUser = await this.getUserProfile(user.uid);
+        const token = this.createToken(user.uid, user.email);
         if (existingUser) {
-          return { ...existingUser };
+          return { ...existingUser, token };
         }
-        const newUser = await this.saveUser(user.email);
+        const newUser = await this.saveUser(user.email, user.uid);
         return { ...newUser };
       } else {
         throw new ErrorWithHttpCode(500, `Failed to authenticate Twitter user`);
       }
     } catch (error) {
-      console.log(error);
-      let message;
-      if (error.code.includes("different-credential"))
-        message = "Email is already associated with another account";
-
       errorHanding.authErrorHandler(
         error,
         message || "Ooops! Something went wrong while linking your Twitter account! Try again."
