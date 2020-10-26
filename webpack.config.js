@@ -17,9 +17,9 @@ module.exports = {
     // },
   },
   output: {
-    path: path.join(__dirname, "dist"),
+    path: path.join(__dirname, ""),
     publicPath: "/",
-    filename: "[name].js",
+    filename: "serber-build.js",
   },
   target: "node",
   node: {
