@@ -10,7 +10,6 @@ import multer from "multer";
 const upload = multer();
 
 export default (app) => {
-  app.post("/test", AuthController.testRules);
   app.post("/auth/login", AuthController.signInUser);
   app.post("/auth/register", AuthController.signUpUser);
   app.post("/auth/google/login", AuthController.signInWithGoogle);
