@@ -13,22 +13,9 @@ class AuthService {
       process.env.TWITTER_KEY,
       process.env.TWITTER_SECRET,
       "1.0A",
-      "http://localhost:8000/login",
+      "https://bookshelf-a2203.web.app/login",
       "HMAC-SHA1"
     );
-  }
-
-  async test(id) {
-    if (firebase.auth().currentUser) {
-      console.log(firebase.auth().currentUser.uid);
-    } else {
-      console.log("nothinf is authenticated");
-    }
-
-    const snap = await firebase.firestore().collection("users").doc(id).get();
-    if (snap.exists) {
-      return snap.data();
-    }
   }
 
   async getUserProfile(id) {
@@ -131,8 +118,7 @@ class AuthService {
         if (error) {
           reject(new ErrorWithHttpCode(500, "Failed to get request token"));
         }
-
-        resolve({ url: `https://api.twitter.com/oauth/authorize?oauth_token=${token}` });
+        resolve({ url: `https://api.twitter.com/oauth/authenticate?oauth_token=${token}` });
       });
     });
   }
