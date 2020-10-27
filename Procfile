@@ -1,1 +1,1 @@
-web: node server-build.js
+web: node api/server.js
