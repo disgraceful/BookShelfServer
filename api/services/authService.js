@@ -13,7 +13,7 @@ class AuthService {
       process.env.TWITTER_KEY,
       process.env.TWITTER_SECRET,
       "1.0A",
-      "http://localhost:8000/login",
+      process.env.TWITTER_CALLBACK,
       "HMAC-SHA1"
     );
   }
