@@ -11,7 +11,10 @@ import { firebaseConfig } from "./firebase.config";
 global.XMLHttpRequest = require("xhr2"); // So firebase storage has weird XMLHttpRequest is not defined error, this is a workaround
 
 const app = express();
-const port = 4200;
+let port = process.env.PORT;
+if (port == null || port == "") {
+  port = 4200;
+}
 
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
