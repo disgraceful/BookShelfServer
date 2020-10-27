@@ -18,19 +18,6 @@ class AuthService {
     );
   }
 
-  async test(id) {
-    if (firebase.auth().currentUser) {
-      console.log(firebase.auth().currentUser.uid);
-    } else {
-      console.log("nothinf is authenticated");
-    }
-
-    const snap = await firebase.firestore().collection("users").doc(id).get();
-    if (snap.exists) {
-      return snap.data();
-    }
-  }
-
   async getUserProfile(id) {
     const snapshot = await firebase.firestore().collection("users").doc(id).get();
 
