@@ -118,7 +118,7 @@ class AuthService {
         if (error) {
           reject(new ErrorWithHttpCode(500, "Failed to get request token"));
         }
-        resolve({ url: `https://api.twitter.com/oauth/authorize?oauth_token=${token}` });
+        resolve({ url: `https://api.twitter.com/oauth/authenticate?oauth_token=${token}` });
       });
     });
   }
