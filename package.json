@@ -6,8 +6,10 @@
   "scripts": {
     "test": "mocha --require esm 'tests/**/*.js'",
     "build-dev": "rm -rf dist && webpack --mode development",
+    "build-prod": "webpack -p --config webpack.prod.js",
     "start:dev": "webpack-dev-server",
-    "start": "nodemon --exec babel-node ./api/server.js"
+    "start-nodemon": "nodemon --exec babel-node ./api/server.js",
+    "start": "node server.js"
   },
   "author": "disgraceful",
   "license": "ISC",
