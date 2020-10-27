@@ -8,7 +8,7 @@
     "build-dev": "rm -rf dist && webpack --mode development",
     "start:dev": "webpack-dev-server",
     "start-nodemon": "nodemon --exec babel-node ./api/server.js",
-    "start": "node server-build.js"
+    "start": "node ./api/server.js"
   },
   "author": "disgraceful",
   "license": "ISC",
