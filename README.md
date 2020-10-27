@@ -1,6 +1,6 @@
 # BookShelf Server
 
-This pet project is an API for BookShelf web-application, designed to be a book library administration system. Main goal is to create application where users can track their books, their reading progress, write down some memorable notes or get information about authors and series. There are also some neat features planned like adding your own private book to your collection, whether or not it is unpublished rare edition or simply an article you read and want to save somewhere.
+This pet project is an API for BookShelf web-application, designed to be a book library administration system. Main goal is to create application where users can track their books, their reading progress, write down some memorable notes or get information about authors and series. There are also some neat features planned like adding your own private book to your collection, whether or not it is unpublished rare edition or simply an article you read and want to save somewhere. Currently it is being hosted via Heroku.
 
 ## Table of contents
 
@@ -26,6 +26,7 @@ I started this project because I wanted to learn more about fullstack developmen
 - Axios - version 0.19
 - Mocha - version 8.1.1
 - Moment.js - version 2.27
+- Heroku - hosting
 
 ## Setup
 
@@ -33,13 +34,31 @@ I started this project because I wanted to learn more about fullstack developmen
 npm install
 ```
 
-Development build
+Development build with Webpack
 
 ```
 npm run build-dev
 ```
 
+Production build with Webpack
+
+```
+npm run build-prod
+```
+
+Start Webpack dev server
+
+```
+npm run start:dev
+```
+
 Start nodemon dev server
+
+```
+npm run start:nodemon
+```
+
+Start command for builded server on Heroku
 
 ```
 npm start
@@ -124,10 +143,10 @@ Save/Retrieve user's private books.
 - [x] User Feed
 - [x] File upload to Firebase Storage
 - [x] Authorization with OAuth (Google + Twitter)
+- [x] Deploy and host
 
 ### To-do list:
 
-- [ ] Deploy and host
 - [ ] Advanced search
 - [ ] Change user account settings
 - [ ] Email notifications via Firebase
