@@ -19,7 +19,7 @@ module.exports = {
   output: {
     path: path.join(__dirname, ""),
     publicPath: "/",
-    filename: "serber-build.js",
+    filename: "server-build.js",
   },
   target: "node",
   node: {
