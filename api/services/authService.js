@@ -13,7 +13,7 @@ class AuthService {
       process.env.TWITTER_KEY,
       process.env.TWITTER_SECRET,
       "1.0A",
-      process.env.TWITTER_CALLBACK,
+      "https://bookshelf-a2203.web.app/login",
       "HMAC-SHA1"
     );
   }
@@ -118,7 +118,6 @@ class AuthService {
         if (error) {
           reject(new ErrorWithHttpCode(500, "Failed to get request token"));
         }
-
         resolve({ url: `https://api.twitter.com/oauth/authorize?oauth_token=${token}` });
       });
     });
