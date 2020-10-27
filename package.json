@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "mocha --require esm 'tests/**/*.js'",
     "build-dev": "rm -rf dist && webpack --mode development",
