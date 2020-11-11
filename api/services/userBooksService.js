@@ -15,7 +15,6 @@ class UserBooksService {
 
   async getUserBooksAsArray(userId) {
     try {
-      console.log(firebase.auth().currentUser.email);
       const snapshot = await this.getUserBooksAsFBCollection(userId).get();
       if (snapshot.empty) return [];
       else {

@@ -14,6 +14,7 @@ class UserService {
         return { ...user, id: userId };
       }
     } catch (error) {
+      console.log(error);
       if (error.userMessage) throw error;
       else throw new ErrorWithHttpCode(500, "Could not retrieve user");
     }

@@ -6,6 +6,7 @@ import oauth from "oauth";
 
 class AuthService {
   constructor(tokenService) {
+    console.log(process.env.TWITTER_CALLBACK);
     this.tokenService = tokenService;
     this.consumer = new oauth.OAuth(
       "https://twitter.com/oauth/request_token",
@@ -13,14 +14,13 @@ class AuthService {
       process.env.TWITTER_KEY,
       process.env.TWITTER_SECRET,
       "1.0A",
-      "https://bookshelf-a2203.web.app/login",
+      process.env.TWITTER_CALLBACK,
       "HMAC-SHA1"
     );
   }
 
   async getUserProfile(id) {
     const snapshot = await firebase.firestore().collection("users").doc(id).get();
-
     if (!snapshot.exists) {
       return null;
     }
@@ -37,16 +37,18 @@ class AuthService {
 
   async getUser(email, password) {
     try {
-      await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.NONE);
       await firebase.auth().signInWithEmailAndPassword(email, password);
       let id = firebase.auth().currentUser.uid;
+
+      const token = this.createToken(id, email);
+
       const user = await this.getUserProfile(id);
 
       if (!user) {
         throw new ErrorWithHttpCode(404, `User with email ${email} does not exist!`);
       }
 
-      return { ...user, token: this.createToken(id, email) };
+      return { ...user, token };
     } catch (error) {
       console.log(error);
 
@@ -56,7 +58,6 @@ class AuthService {
 
   async createUser(email, password) {
     try {
-      await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.NONE);
       await firebase.auth().createUserWithEmailAndPassword(email, password);
       let uid = firebase.auth().currentUser.uid;
       let saved = await this.saveUser(email, uid);
@@ -85,7 +86,6 @@ class AuthService {
 
   async signInGoogle(token) {
     try {
-      await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.NONE);
       const credential = firebase.auth.GoogleAuthProvider.credential(token);
       const fbUser = await firebase.auth().signInWithCredential(credential);
       const user = fbUser.user;
@@ -141,7 +141,6 @@ class AuthService {
 
   async signInTwitter(token, secret) {
     try {
-      await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.NONE);
       const credential = firebase.auth.TwitterAuthProvider.credential(token, secret);
       const fbUser = await firebase.auth().signInWithCredential(credential);
       const user = fbUser.user;
