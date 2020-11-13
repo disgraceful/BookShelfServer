@@ -15,7 +15,9 @@ class UserBooksService {
 
   async getUserBooksAsArray(userId) {
     try {
-      const snapshot = await this.getUserBooksAsFBCollection(userId).get();
+      const snapshot = await this.getUserBooksAsFBCollection(userId)
+        .orderBy("timestamp", "desc")
+        .get();
       if (snapshot.empty) return [];
       else {
         return snapshot.docs.map((doc) => doc.data());
@@ -51,7 +53,6 @@ class UserBooksService {
       if (!avaliableBookStatus.includes(collection.toLowerCase())) {
         throw new ErrorWithHttpCode(400, "Book status is invalid");
       }
-      console.log(book);
       // Determine if book IS in collection.
       const userBooksCollection = this.getUserBooksAsFBCollection(userId);
       const snapshot = await userBooksCollection.where("id", "==", book.id).get();
@@ -59,7 +60,9 @@ class UserBooksService {
       book.userData.status = collection;
       if (snapshot.empty) {
         //If NOT - Add book to the collection
-        await userBooksCollection.doc().set(book);
+        await userBooksCollection
+          .doc()
+          .set({ ...book, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
       } else {
         // Otherwise - only update
         const doc = snapshot.docs[0];
