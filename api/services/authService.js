@@ -6,7 +6,6 @@ import oauth from "oauth";
 
 class AuthService {
   constructor(tokenService) {
-    console.log(process.env.TWITTER_CALLBACK);
     this.tokenService = tokenService;
     this.consumer = new oauth.OAuth(
       "https://twitter.com/oauth/request_token",

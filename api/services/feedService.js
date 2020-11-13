@@ -16,6 +16,24 @@ const dateFormat = "DD MMM YYYY";
 const errorMsg = "Something went wrong while retrieving user feed";
 
 class FeedService {
+  convertToFBAction(action) {
+    if (!actions[action]) {
+      return false;
+    }
+    switch (action) {
+      case "2read":
+      case "finished":
+      case "stopped":
+      case "reading":
+        return "add";
+      case "update":
+      case "rating":
+        return action;
+      case "not":
+        return "delete";
+    }
+  }
+
   generateFeed(book, action, { pages, rating }) {
     if (!actions[action] || !book || book.id === "" || book.title === "") {
       return null;
@@ -24,6 +42,7 @@ class FeedService {
     return {
       date: moment().format(dateFormat),
       message: `${actions[action]} ${pages ? pages + " pages of " : ""}`,
+      action: this.convertToFBAction(action),
       data: { id: book.id, title: book.title, rating: rating || null },
     };
   }
@@ -100,18 +119,30 @@ class FeedService {
     const recordMap = new Map();
 
     const cleanFeed = feed.filter((value) => {
-      if (value.message.includes("pages")) {
-        return true;
-      }
-
       if (recordMap.has(value.data.id)) {
+        const records = recordMap.get(value.data.id);
+
+        if (records.some((r) => r.action === "delete")) {
+          return false;
+        }
+        if (value.action === "delete") {
+          records.push(value);
+          return false;
+        }
+        if (value.action == "update") {
+          return true;
+        }
+        if (records.every((r) => r.action !== value.action)) {
+          records.push(value);
+          return true;
+        }
+
         return false;
       } else {
-        recordMap.set(value.data.id, value);
+        recordMap.set(value.data.id, [value]);
         return true;
       }
     });
-
     cleanFeed.sort(compare); //reverse is simple, but compare is reliable
     return cleanFeed;
   }
@@ -126,7 +157,7 @@ class FeedService {
         curRecord.push(item);
       }
     });
-
+    console.log(feedMap);
     return feedMap;
   }
 
